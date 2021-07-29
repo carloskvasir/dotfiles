@@ -17,6 +17,8 @@ zplug "plugins/git", from:oh-my-zsh
 zplug "plugins/virtualenv", from:oh-my-zsh
 zplug "zsh-users/zsh-autosuggestions"
 zplug "zsh-users/zsh-syntax-highlighting"
+zplug "plugins/rails",   from:oh-my-zsh
+zplug "agkozak/zsh-z"
 
 # spaceship-prompt config
 SPACESHIP_PROMPT_ORDER=(

@@ -13,6 +13,7 @@ endif
 call plug#begin('~/.config/nvim/plugged')
 Plug 'vim-airline/vim-airline'
 Plug 'dracula/vim', { 'as': 'dracula' }
+Plug 'morhetz/gruvbox'
 Plug 'arcticicestudio/nord-vim'
 Plug 'scrooloose/nerdtree'
 Plug 'ryanoasis/vim-devicons'
@@ -52,8 +53,7 @@ endif
 set nu              "Mostra número de linhas
 set relativenumber  "Mostra números relativos
 set background=dark
-colorscheme nord
-
+colorscheme dracula
 syntax on
 set autoindent
 set textwidth=80

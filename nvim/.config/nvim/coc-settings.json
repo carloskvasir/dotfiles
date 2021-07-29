@@ -1,6 +1,5 @@
 {
   "diagnostic.virtualText": false,
-  "diagnostic.checkCurrentLine": true,
   "suggest.noselect": false,
   "coc.preferences.formatOnSaveFiletypes": [
     "javascript",
@@ -21,10 +20,10 @@
       "command": "~/.elixir-ls/release/language_server.sh",
       "filetypes": ["elixir", "eelixir"]
     },
-    "golang":{
-    "command": "gopls",
-    "rootPatterns": ["go.mod",".vim", ".git/", ".hg/"],
-    "filetypes": ["go"]
+    "golang": {
+      "command": "gopls",
+      "rootPatterns": ["go.mod", ".vim", ".git/", ".hg/"],
+      "filetypes": ["go"]
     },
     "terraform": {
       "command": "terraform-lsp",
@@ -66,5 +65,6 @@
     "enumMember": "  "
   },
   "solargraph.formatting": true,
-  "solargraph.diagnostics": true
+  "solargraph.diagnostics": true,
+  "diagnostic.checkCurrentLine": true
 }
