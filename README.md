@@ -13,6 +13,9 @@ Install all asdf plugins and versions
 ```zsh
 awk '{print $1}' ~/.tool-versions | xargs -I @@ asdf plugin add @@
 ```
+```zsh
+awk '{print $1}' ~/.tool-versions | xargs -I @@ asdf install @@
+```
 
 Stow create symlinks using same path of .dotfiles
 
