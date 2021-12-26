@@ -1,1 +1,6 @@
 require("carloskvasir/telescope")
+require("carloskvasir/treesitter")
+require("carloskvasir/lsp")
+require("carloskvasir/gitsigns")
+require("carloskvasir/compe")
+require("carloskvasir/lsp-installer")

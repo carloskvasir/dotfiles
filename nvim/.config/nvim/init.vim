@@ -2,58 +2,40 @@
 "       Plug Scripts autoinstall & load
 " ----------------------------------------------------------
 if empty(glob('~/.config/nvim/autoload/plug.vim'))
-  silent !curl -fLo ~/.config/nvim/autoload/plug.vim --create-dirs
-    \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-  autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
+    silent !curl -fLo ~/.config/nvim/autoload/plug.vim --create-dirs
+        \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+    autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
 endif
 
 " ----------------------------------------------------------
 "       THIS IS WHERE YOUR PLUGINS WILL COME
 " ----------------------------------------------------------
-call plug#begin('~/.config/nvim/plugged')
-Plug 'vim-airline/vim-airline'
-Plug 'dracula/vim', { 'as': 'dracula' }
-Plug 'morhetz/gruvbox'
-Plug 'arcticicestudio/nord-vim'
-Plug 'scrooloose/nerdtree'
-Plug 'ryanoasis/vim-devicons'
-Plug 'neoclide/coc.nvim', {'branch': 'release', 'do': 'yarn install --frozen-lockfile'}
-Plug 'elixir-editors/vim-elixir',{'for': 'elixir'}
-"Plug 'kdheepak/lazygit.nvim'
-Plug 'tpope/vim-surround'
-Plug 'nvim-lua/popup.nvim'
-Plug 'nvim-lua/plenary.nvim'
-Plug 'nvim-telescope/telescope.nvim'
-Plug 'nvim-telescope/telescope-fzy-native.nvim'
-Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}  " We recommend updating the parsers on update
-Plug 'voldikss/vim-floaterm'
-Plug 'christoomey/vim-tmux-navigator'
-Plug 'airblade/vim-gitgutter'   "Add gutter whit git status
-Plug 'luochen1990/rainbow'
-Plug 'junegunn/rainbow_parentheses.vim'
-Plug 'sheerun/vim-polyglot'
-Plug 'tpope/vim-fugitive'
-Plug 'unblevable/quick-scope'
-Plug 'fatih/vim-go'
-Plug 'tpope/vim-rails'
-Plug 'eslint/eslint'
-Plug 'sgur/vim-editorconfig'
-call plug#end()
+call plug#begin('~/.config/nvim/plugins')
 
-" ----------------------------------------------------------
-"       TRUECOLOR ENABLE
-" ----------------------------------------------------------
-if has ("termguicolors")
-    set termguicolors
-endif
+Plug 'morhetz/gruvbox' "Theme
+Plug 'vim-airline/vim-airline' "Command line
+Plug 'vim-airline/vim-airline-themes'
+Plug 'tpope/vim-fugitive'
+Plug 'nvim-telescope/telescope.nvim'
+Plug 'nvim-lua/plenary.nvim'
+Plug 'nvim-telescope/telescope-fzf-native.nvim', {'do': 'make' }
+Plug 'kyazdani42/nvim-web-devicons'
+Plug 'lewis6991/gitsigns.nvim'
+Plug 'nvim-treesitter/nvim-treesitter', { 'do': ':TSUpdate' }
+Plug 'neovim/nvim-lspconfig'
+Plug 'williamboman/nvim-lsp-installer'
+Plug 'hrsh7th/nvim-compe'
+Plug 'hrsh7th/vim-vsnip'
+
+call plug#end()
 
 " ----------------------------------------------------------
 "       CONFIGS
 " ----------------------------------------------------------
-set nu              "Mostra número de linhas
-set relativenumber  "Mostra números relativos
+set nu              "Show line number
+set relativenumber  "Show relative numbers
 set background=dark
-colorscheme dracula
+colorscheme gruvbox
 syntax on
 set autoindent
 set textwidth=80
@@ -75,35 +57,24 @@ set smartindent     "Makes indenting smart
 set clipboard+=unnamedplus "Configure clipboard
 
 " ----------------------------------------------------------
+"       TRUECOLOR ENABLE
+" ----------------------------------------------------------
+if has ("termguicolors")
+    set termguicolors
+endif
+
+" ----------------------------------------------------------
 "       STATUS BAR Vim-Airline
 " ----------------------------------------------------------
 set laststatus=2
 let g:airline_powerline_fonts = 1
-let g:airline_theme='dracula'
+let g:airline_theme='gruvbox'
 
 " Enable the list of buffers
 let g:airline#extensions#tabline#enabled = 1
 
 " Show just the filename
 let g:airline#extensions#tabline#fnamemod = ':t'
-
-" ----------------------------------------------------------
-"       COC config
-" ----------------------------------------------------------
-let g:coc_global_extensions = [
-  \ 'coc-diagnostic',
-  \ 'coc-elixir',
-  \ 'coc-emmet',
-  \ 'coc-eslint',
-  \ 'coc-go',
-  \ 'coc-json',
-  \ 'coc-prettier',
-  \ 'coc-snippets',
-  \ 'coc-solargraph',
-  \ 'coc-tsserver'
-  \ ]
-let g:python_host_prog = "$HOME/.asdf/shims/python2"
-let g:python3_host_prog = "$HOME/.asdf/shims/python3"
 
 " ---------------------------------------------------------
 "       Configs to Use buffers in tabs
@@ -135,45 +106,5 @@ nnoremap <TAB> :bnext<CR>
 " SHIFT-TAB will go back
 nnoremap <S-TAB> :bprevious<CR>
 
-
-" ---------------------------------------------------------
-"       Config coc completion
-" ---------------------------------------------------------
-" use <tab> for trigger completion and navigate to the next complete item
-function! s:check_back_space() abort
-  let col = col('.') - 1
-  return !col || getline('.')[col - 1]  =~ '\s'
-endfunction
-
-inoremap <silent><expr> <Tab>
-      \ pumvisible() ? "\<C-n>" :
-      \ <SID>check_back_space() ? "\<Tab>" :
-      \ coc#refresh()
-
-" use <Enter> for trigger completion
-inoremap <expr> <cr> pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
-" Better nav for omnicomplete
-inoremap <expr> <c-j> ("\<C-n>")
-inoremap <expr> <c-k> ("\<C-p>")
-
-" Jump to definition config
-nmap <silent> gd <Plug>(coc-definition)
-
-" ---------------------------------------------------------
-"       Config NerdTree
-" ---------------------------------------------------------
-" NerdTree open default
-autocmd StdinReadPre * let s:std_in=1
-
-" When open file close nerdtree
-let NERDTreeQuitOnOpen = 1
-
-" Prettier NerdTree
-"let NERDTreeMinimalUI = 1
-"let NERDTreeDirArrows = 1
-
-"--- Disable perl ---
-:let g:loaded_perl_provider = 0
-source $HOME/.config/nvim/keys.vim " keys biding
-let NERDTreeIgnore=['\.git$', '\.idea$', '\.vscode$', '\.history$']
-
+lua require('carloskvasir')
+source ~/.config/nvim/biddings.vim
