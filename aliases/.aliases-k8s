@@ -1,0 +1,28 @@
+#alias kubectl
+alias k="kubectl"
+alias kc="kubectl create -f"
+alias kg="kubectl get"
+alias kl="kubectl logs "
+alias klf="kubectl logs -f"
+alias kx="kubectl exec -i -t"
+alias kd="kubectl describe"
+alias krm="kubectl delete"
+alias ka="kubectl apply -fi"
+alias kp="kubectl get po"
+alias kpf="kubectl port-forward"
+alias ksvc="kubectl get svc"
+alias kns='kubectl-change_ns'
+alias kctx="kubectx"
+alias kga="kubectl-get_all"
+alias kscan='kubectl-kubesec_scan'
+alias klogs="kubectl-pod_logs"
+alias ksniff="kubectl-sniff"
+alias ksudo="kubectl-sudo"
+alias kwarp="kubectl-warp"
+alias kkrew="kubectl-krew"
+alias ktail="kubectl-mtail"
+alias krst="kubectl-restart"
+alias kssh="kubectl-ssh_jump"
+alias kvs="kubectl-view_secret"
+alias kw='watch -n1 "kubectl get pod | grep -i $1"'
+

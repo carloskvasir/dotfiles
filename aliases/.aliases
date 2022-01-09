@@ -1,5 +1,9 @@
 # My aliases
 
+# Use just nvim
+alias vim='nvim'
+alias v='nvim'
+
 # Using lsd
 alias ls='lsd'
 alias l='ls -l'
@@ -8,8 +12,8 @@ alias ll='ls -la'
 alias lt='ls --tree'
 alias l.='ls -d .*'
 
+alias d='docker'
 alias c='clear'
-alias gp='git push'
 
 # Using xsel
 alias pbcopy='xsel --clipboard --input'
@@ -27,10 +31,11 @@ mkcd ()
   mkdir -p -- "$1" && cd -P -- "$1"
 }
 
-#. ~/.asdf/plugins/java/set-java-home.zsh
-#alias terraform='docker run --rm -it -v $(pwd):/app/ -w /app/ hashicorp/terraform:latest'
+# Aliases for Kubectl
+source ~/.aliases-k8s
 
-#Config tmux open by default
-#if command -v tmux &> /dev/null && [ -z "$TMUX" ]; then
-#    tmux attach -t default || tmux new -s default
-#fi
+# Aliases for GIT
+source ~/.aliases-git
+
+# WORK DEFINITIONS
+test -f ~/.aliases-trust && source ~/.aliases-trust
