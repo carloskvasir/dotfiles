@@ -12,7 +12,7 @@ endif
 " ----------------------------------------------------------
 call plug#begin('~/.config/nvim/plugins')
 
-Plug 'morhetz/gruvbox' "Theme
+Plug 'gruvbox-community/gruvbox'
 Plug 'vim-airline/vim-airline' "Command line
 Plug 'vim-airline/vim-airline-themes'
 Plug 'tpope/vim-fugitive'
@@ -26,6 +26,8 @@ Plug 'neovim/nvim-lspconfig'
 Plug 'williamboman/nvim-lsp-installer'
 Plug 'hrsh7th/nvim-compe'
 Plug 'hrsh7th/vim-vsnip'
+Plug 'unblevable/quick-scope'
+Plug 'tomlion/vim-solidity', { 'for': 'solidity' }
 
 call plug#end()
 
@@ -38,7 +40,7 @@ set background=dark
 colorscheme gruvbox
 syntax on
 set autoindent
-set textwidth=80
+"set textwidth=80
 
 set expandtab
 set tabstop=4
@@ -105,6 +107,13 @@ nmap <leader>bl :ls<CR>
 nnoremap <TAB> :bnext<CR>
 " SHIFT-TAB will go back
 nnoremap <S-TAB> :bprevious<CR>
+
+" ---------------------------------------------------------
+"       Configure QuickScope
+" ---------------------------------------------------------
+
+" Trigger a highlight in the appropriate direction when pressing these keys:
+let g:qs_highlight_on_keys = ['f', 'F', 't', 'T']
 
 lua require('carloskvasir')
 source ~/.config/nvim/biddings.vim
