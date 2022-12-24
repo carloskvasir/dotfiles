@@ -14,7 +14,7 @@ neovim 0.8.1
 tmux 3.2
 crystal 1.0.0
 packer 1.7.2
-golang 1.16.4
+golang 1.17.6
 yarn 1.22.10
 haskell 9.0.1
 nnn 4.2
