@@ -1,0 +1,44 @@
+# My aliases
+
+# Use just nvim
+alias vim='nvim'
+alias v='nvim'
+
+# Using lsd
+# alias ls='lsd'
+alias l='ls -l'
+alias la='ls -a'
+alias ll='ls -la'
+alias lt='ls --tree'
+alias l.='ls -d .*'
+
+# Using bat
+alias bat='batcat'
+
+alias d='docker'
+alias c='clear'
+
+# Using xsel
+alias pbcopy='xsel --clipboard --input'
+alias pbpaste='xsel --clipboard --output'
+
+#alias nodejs to node
+alias nodejs='node'
+
+# Copy with progressbar
+alias cpv='rsync -ah --info=progress2'
+
+#Make dir and cd into
+mkcd ()
+{
+  mkdir -p -- "$1" && cd -P -- "$1"
+}
+
+# Aliases for Kubectl
+source ~/.aliases-k8s
+
+# Aliases for GIT
+source ~/.aliases-git
+
+# WORK DEFINITIONS
+test -f ~/.aliases-trust && source ~/.aliases-trust
