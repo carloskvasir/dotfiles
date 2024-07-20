@@ -16,8 +16,5 @@ if [ -f ~/.aliases ]; then
     source ~/.aliases
 fi
 
-# Add brew
-eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-
 # Add mise
 eval "$(~/.local/bin/mise activate bash)"
