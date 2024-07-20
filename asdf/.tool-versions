@@ -1,5 +1,5 @@
-nodejs lts
-python 3.9.5
+node lts
+python 3.12.4
 ruby 3.3.4
 java openjdk-15
 fzf 0.53.0
