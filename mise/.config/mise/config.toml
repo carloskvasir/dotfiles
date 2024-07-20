@@ -1,0 +1,9 @@
+[tools]
+ripgrep = "14.1.0"
+node = "lts"
+fzf = "0.53.0"
+java = "22"
+neovim = "0.10.0"
+python = "3.12.4"
+ruby = "3.3.4"
+lazygit = "latest"

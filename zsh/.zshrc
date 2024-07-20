@@ -9,7 +9,6 @@ source ~/.zplug/init.zsh
 
 # Make sure to use double quotes to prevent shell expansion
 zplug "denysdovhan/spaceship-prompt", use:spaceship.zsh, from:github, as:theme
-zplug "plugins/asdf", from:oh-my-zsh
 zplug "plugins/git", from:oh-my-zsh
 zplug "plugins/virtualenv", from:oh-my-zsh
 
@@ -78,4 +77,3 @@ ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets pattern cursor)
 if [ -f ~/.aliases ]; then
     source ~/.aliases
 fi
-
