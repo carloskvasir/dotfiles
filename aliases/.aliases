@@ -41,4 +41,5 @@ source ~/.aliases-k8s
 source ~/.aliases-git
 
 # WORK DEFINITIONS
-test -f ~/.aliases-trust && source ~/.aliases-trust
+test -f ~/.aliases-work && source ~/.aliases-work
+
