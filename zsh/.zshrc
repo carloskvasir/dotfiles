@@ -77,3 +77,6 @@ ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets pattern cursor)
 if [ -f ~/.aliases ]; then
     source ~/.aliases
 fi
+
+# CONFIG MISE IN ZSH
+eval "$(mise activate zsh)"
