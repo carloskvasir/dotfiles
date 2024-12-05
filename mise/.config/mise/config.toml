@@ -1,11 +1,22 @@
 [tools]
-ripgrep = "14.1.0"
-node = "lts"
-fzf = "0.53.0"
-java = "22"
-neovim = "0.10.0"
-python = "3.12.4"
-ruby = "3.3.4"
-lazygit = "latest"
-lua = "5.4.7"
-go = "1"
+ripgrep = "latest"           # Sempre a versão mais recente
+node = "lts"                # Usa a versão LTS (Long-Term Support)
+fzf = "latest"              # Sempre a versão mais recente
+java = "lts"                # Versão LTS de Java
+neovim = "latest"           # Versão mais recente do Neovim
+python = "3.11.4"           # Versão de suporte a longo prazo do Python
+ruby = "latest"             # Sempre a versão mais recente
+lazygit = "latest"          # Versão mais recente
+lua = "latest"              # Versão mais recente
+go = "latest"               # Versão mais recente
+yarn = "latest"             # Versão mais recente
+usage = "latest"            # Versão mais recente
+terraform = "latest"        # Versão mais recente do Terraform
+gcloud = "latest"           # Versão mais recente do Google Cloud CLI
+
+[settings]
+experimental = true         # Ativa recursos experimentais no Mise
+legacy_version_file = true  # Mantém a configuração moderna
+
+[settings.python]
+compile = false             # Não compila o Python durante a instalação
