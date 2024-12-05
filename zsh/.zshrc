@@ -7,10 +7,21 @@ fi
 # Essential
 source ~/.zplug/init.zsh
 
+# Custom Key Bindings for Zsh Interactive Features
+bindkey '^R' fzf-history-widget  # Use fzf for interactive command history
+bindkey '^[[Z' autosuggest-accept  # Accept suggestion using Shift + Tab (if desired)
+
+
 # Make sure to use double quotes to prevent shell expansion
 zplug "denysdovhan/spaceship-prompt", use:spaceship.zsh, from:github, as:theme
 zplug "plugins/git", from:oh-my-zsh
+zplug "docker/compose", from:github
+zplug "plugins/docker", from:oh-my-zsh
+zplug "plugins/podman", from:oh-my-zsh
 zplug "plugins/virtualenv", from:oh-my-zsh
+zplug "zsh-users/zsh-autosuggestions"
+zplug "zsh-users/zsh-syntax-highlighting", defer:2
+
 
 # spaceship-prompt config
 SPACESHIP_PROMPT_ORDER=(
@@ -77,6 +88,9 @@ ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets pattern cursor)
 if [ -f ~/.aliases ]; then
     source ~/.aliases
 fi
+
+# Fzf integration
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
 # CONFIG MISE IN ZSH
 eval "$(mise activate zsh)"
