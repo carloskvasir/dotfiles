@@ -15,12 +15,31 @@ alias l.='ls -d .*'
 # Using bat
 alias bat='batcat'
 
-alias d='docker'
+alias d='podman'
 alias c='clear'
 
-# Using xsel
-alias pbcopy='xsel --clipboard --input'
-alias pbpaste='xsel --clipboard --output'
+# pbcopy config
+function pbcopy {
+  if command -v xsel &> /dev/null; then
+    xsel --clipboard --input
+  elif command -v xclip &> /dev/null; then
+    xclip -selection clipboard -i
+  else
+    echo "Error: No clipboard utility found (xsel or xclip)." >&2
+    return 1
+  fi
+}
+
+function pbpaste {
+  if command -v xsel &> /dev/null; then
+    xsel --clipboard --output
+  elif command -v xclip &> /dev/null; then
+    xclip -selection clipboard -o
+  else
+    echo "Error: No clipboard utility found (xsel or xclip)." >&2
+    return 1
+  fi
+}
 
 #alias nodejs to node
 alias nodejs='node'
