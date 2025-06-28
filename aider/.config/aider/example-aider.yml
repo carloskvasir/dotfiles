@@ -1,0 +1,5 @@
+api_key: YOUR_GEMINI_API_KEY  # Substitua pela sua chave de API
+api_url: https://path-to-gemini-api/v1/  # Substitua pelo endpoint do Gemini
+model: gemini-large  # Substitua pelo modelo específico do Gemini
+temperature: 0.7  # Configure a temperatura do modelo conforme sua necessidade
+

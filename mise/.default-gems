@@ -1,5 +1,14 @@
-bundler
-neovim
-pry
-solargraph
+# Gems Ruby essenciais instaladas automaticamente pelo mise
+# Já instaladas
+bundler                 # Dependency manager (obrigatório)
+neovim                  # Neovim Ruby support
+
+# === FERRAMENTAS DE DESENVOLVIMENTO ===
+pry                     # REPL melhorado
+rubocop                 # Code linting
+solargraph              # Language server para IDE
+
+# === UTILITÁRIOS GLOBAIS ===
+awesome_print           # Pretty print para debugging
+thor                    # CLI building (muitas gems dependem)
 

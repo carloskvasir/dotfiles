@@ -1,10 +1,15 @@
-# My aliases
+# -------------------------------
+# Aliases e Funções Personalizados
+# -------------------------------
+
+# aider.chat
+alias a='aider --env-file ~/.aider.env --copy-paste --vim'
 
 # Use just nvim
 alias vim='nvim'
 alias v='nvim'
 
-# Using lsd
+# Using lsd (ou ls)
 # alias ls='lsd'
 alias l='ls -l'
 alias la='ls -a'
@@ -12,53 +17,137 @@ alias ll='ls -la'
 alias lt='ls --tree'
 alias l.='ls -d .*'
 
-# Using bat
-alias bat='batcat'
+# Navegação rápida
+alias ..='cd ..'
+alias ...='cd ../..'
 
-alias d='podman'
+# Docker
+alias d='docker'
+alias dcud='docker compose up -d'
+alias dcd='docker compose down'
+alias dc='docker compose'
 alias c='clear'
 
-# pbcopy config
-function pbcopy {
-  if command -v xsel &> /dev/null; then
-    xsel --clipboard --input
-  elif command -v xclip &> /dev/null; then
-    xclip -selection clipboard -i
-  else
-    echo "Error: No clipboard utility found (xsel or xclip)." >&2
-    return 1
-  fi
-}
+# NPM
+alias n='npm'
+alias nr='npm run' 
 
-function pbpaste {
-  if command -v xsel &> /dev/null; then
-    xsel --clipboard --output
-  elif command -v xclip &> /dev/null; then
-    xclip -selection clipboard -o
-  else
-    echo "Error: No clipboard utility found (xsel or xclip)." >&2
-    return 1
-  fi
-}
 
-#alias nodejs to node
-alias nodejs='node'
+# Atualização do sistema
+alias update='sudo apt update && sudo apt upgrade -y'
 
-# Copy with progressbar
+# Copy with progressbar (usando rsync)
 alias cpv='rsync -ah --info=progress2'
 
-#Make dir and cd into
-mkcd ()
-{
+# Alias para nodejs (caso precise)
+alias nodejs='node'
+
+# -------------------------------
+# Funções para Clipboard
+# -------------------------------
+# pbcopy: copia a entrada padrão para o clipboard
+pbcopy() {
+  # Se estiver em ambiente Wayland, use wl-copy
+  if command -v wl-copy > /dev/null 2>&1; then
+    wl-copy
+  # Senão, tenta xsel
+  elif command -v xsel > /dev/null 2>&1; then
+    xsel --clipboard --input
+  # Senão, tenta xclip
+  elif command -v xclip > /dev/null 2>&1; then
+    xclip -selection clipboard -i
+  else
+    echo "Error: Nenhum utilitário de clipboard encontrado (wl-copy, xsel ou xclip)." >&2
+    return 1
+  fi
+}
+
+# pbpaste: cola do clipboard para a saída padrão
+pbpaste() {
+  # Se estiver em ambiente Wayland, use wl-paste
+  if command -v wl-paste > /dev/null 2>&1; then
+    wl-paste
+  # Senão, tenta xsel
+  elif command -v xsel > /dev/null 2>&1; then
+    xsel --clipboard --output
+  # Senão, tenta xclip
+  elif command -v xclip > /dev/null 2>&1; then
+    xclip -selection clipboard -o
+  else
+    echo "Error: Nenhum utilitário de clipboard encontrado (wl-paste, xsel ou xclip)." >&2
+    return 1
+  fi
+}
+
+# -------------------------------
+# Função para criar diretórios e entrar neles
+# -------------------------------
+mkcd () {
   mkdir -p -- "$1" && cd -P -- "$1"
 }
 
-# Aliases for Kubectl
-source ~/.aliases-k8s
+# -------------------------------
+# Função para extrair arquivos compactados
+# -------------------------------
+extract () {
+  if [ -f "$1" ]; then
+    case "$1" in
+      *.tar.bz2)   tar xjf "$1"   ;;
+      *.tar.gz)    tar xzf "$1"   ;;
+      *.tar.xz)    tar xJf "$1"   ;;
+      *.tar)       tar xf "$1"    ;;
+      *.zip)       unzip "$1"     ;;
+      *.rar)       unrar x "$1"   ;;
+      *.7z)        7z x "$1"      ;;
+      *)           echo "'$1' cannot be extracted via extract()" ;;
+    esac
+  else
+    echo "'$1' is not a valid file!"
+  fi
+}
 
-# Aliases for GIT
-source ~/.aliases-git
+# -------------------------------
+# Função para servir o diretório atual via HTTP
+# -------------------------------
+serve () {
+  # Usa o Python 3 para iniciar um servidor HTTP na porta 8000 (ou outra, se fornecida)
+  local port=${1:-8000}
+  echo "Serving HTTP on port $port..."
+  python3 -m http.server "$port"
+}
 
-# WORK DEFINITIONS
-test -f ~/.aliases-work && source ~/.aliases-work
+# -------------------------------
+# Função para buscar arquivos por nome (find file)
+# -------------------------------
+ff() {
+  if [ -z "$1" ]; then
+    echo "Usage: ff <pattern>"
+  else
+    find . -type f -iname "*$1*"
+  fi
+}
 
+# -------------------------------
+# Função para limpar containers e imagens Docker (use com cautela)
+# -------------------------------
+docker-clean() {
+  read -p "This will remove all Docker containers and images. Continue? (y/N): " confirm
+  if [[ $confirm =~ ^[Yy]$ ]]; then
+    docker rm $(docker ps -aq) 2>/dev/null
+    docker rmi $(docker images -q) 2>/dev/null
+  else
+    echo "Aborted."
+  fi
+}
+
+# -------------------------------
+# Inclusão de Aliases Externos
+# -------------------------------
+# Aliases para Kubectl
+[ -f ~/.aliases-k8s ] && source ~/.aliases-k8s
+
+# Aliases para Git
+[ -f ~/.aliases-git ] && source ~/.aliases-git
+
+# Aliases do trabalho
+[ -f ~/.aliases-work ] && source ~/.aliases-work

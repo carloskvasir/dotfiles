@@ -1,22 +1,113 @@
 [tools]
-ripgrep = "latest"           # Sempre a versão mais recente
-node = "lts"                # Usa a versão LTS (Long-Term Support)
-fzf = "latest"              # Sempre a versão mais recente
-java = "lts"                # Versão LTS de Java
-neovim = "latest"           # Versão mais recente do Neovim
-python = "3.11.4"           # Versão de suporte a longo prazo do Python
-ruby = "latest"             # Sempre a versão mais recente
-lazygit = "latest"          # Versão mais recente
-lua = "latest"              # Versão mais recente
-go = "latest"               # Versão mais recente
-yarn = "latest"             # Versão mais recente
-usage = "latest"            # Versão mais recente
-terraform = "latest"        # Versão mais recente do Terraform
-gcloud = "latest"           # Versão mais recente do Google Cloud CLI
+# === Linguagens de Programação ===
+node = "22.16.0"            # Node.js para desenvolvimento web
+python = "3.12"             # Python para scripts e desenvolvimento
+ruby = "3"                  # Ruby para Rails
+go = "latest"               # Go para ferramentas modernas
+rust = "latest"             # Rust para performance
+java = "24"                 # Java para desenvolvimento enterprise
+lua = "latest"              # Lua para Neovim e scripts
+
+# === Editores e IDEs ===
+neovim = "latest"           # Editor moderno
+
+# === Ferramentas de Build e Deploy ===
+terraform = "latest"        # Infrastructure as Code
+maven = "latest"            # Build tool para Java
+yarn = "latest"             # Package manager JS alternativo
+just = "1.39"               # Command runner moderno
+# podman = "latest"           # Alternativa ao Docker
+
+# === Ferramentas de Linha de Comando ===
+ripgrep = "latest"          # Busca em arquivos (rg)
+fzf = "latest"              # Fuzzy finder
+fd = "latest"               # Find moderno
+bat = "latest"              # Cat com syntax highlighting
+eza = "latest"              # ls moderno (substitui exa)
+delta = "latest"            # Git diff melhorado
+dust = "latest"             # du moderno
+bottom = "latest"           # htop moderno (btm)
+zoxide = "latest"           # cd inteligente (z)
+starship = "latest"         # Prompt moderno
+hyperfine = "latest"        # Benchmarking de comandos
+tokei = "latest"            # Contador de linhas de código
+git-cliff = "latest"        # Gerador de changelog
+gh = "latest"               # GitHub CLI
+glab = "latest"             # GitLab CLI
+
+# === Git e Versionamento ===
+lazygit = "latest"          # Git TUI
+#git-delta = "latest"        # Git diff viewer
+pre-commit = "latest"       # Git hooks
+
+# === Desenvolvimento Web ===
+deno = "latest"             # Runtime JS/TS moderno
+bun = "latest"              # Runtime JS ultra-rápido
+
+# === DevOps e Cloud ===
+gcloud = "latest"           # Google Cloud CLI
+aws-cli = "latest"          # AWS CLI
+kubectl = "latest"          # Kubernetes CLI
+helm = "latest"             # Kubernetes package manager
+k9s = "latest"              # Kubernetes TUI
+
+# === Ferramentas de Sistema ===
+tmux = "latest"             # Terminal multiplexer
+#htop = "latest"             # Monitor de sistema
+#tree = "latest"             # Visualizador de árvore
+jq = "latest"               # JSON processor
+yq = "latest"               # YAML processor
+#curl = "latest"             # HTTP client
+#wget = "latest"             # Download utility
+
+# === Python específico ===
+uv = "latest"               # Package manager Python ultra-rápido
+poetry = "latest"           # Dependency management Python
+pipx = "latest"             # Install Python apps in isolated envs
+
+# === Desenvolvimento Mobile ===
+android-sdk = "19.0"        # Android development
+
+# === Outras ferramentas úteis ===
+usage = "latest"            # Especificação de CLI
+direnv = "latest"           # Environment per directory
+shellcheck = "latest"       # Shell script linter
+shfmt = "latest"            # Shell script formatter
 
 [settings]
 experimental = true         # Ativa recursos experimentais no Mise
 legacy_version_file = true  # Mantém a configuração moderna
+idiomatic_version_file_enable_tools = ["ruby", "node", "python"]
+pin = true                  # Pin versions in .tool-versions files
+always_keep_download = true # Manter downloads para reinstalação rápida
+always_keep_install = true  # Manter instalações antigas por segurança
+paranoid = false            # Não validar checksums (mais rápido)
+jobs = 4                    # Parallel jobs para instalação
 
-[settings.python]
-compile = false             # Não compila o Python durante a instalação
+# Aliases úteis para comandos longos
+[alias]
+i = "install"
+u = "upgrade"
+ls = "list"
+lsi = "list --installed"
+
+# Configuração de pacotes padrão e variáveis de ambiente
+[env]
+MISE_PYTHON_DEFAULT_PACKAGES_FILE = "~/.default-python-packages"
+MISE_NODE_DEFAULT_PACKAGES_FILE = "~/.default-npm-packages"  
+MISE_RUBY_DEFAULT_GEMS_FILE = "~/.default-gems"
+# Acelerar compilação usando todos os cores
+MAKEFLAGS = "-j$(nproc)"
+# Otimizações de compilação
+CFLAGS = "-O3 -march=native"
+CXXFLAGS = "-O3 -march=native"
+
+# === Ferramentas instaladas via sistema (apt/snap) ===
+# Essas ferramentas NÃO devem ser gerenciadas pelo mise:
+# vscode                   # VS Code Desktop - instalar via apt ou snap  
+# docker                   # Docker Engine - instalar via apt
+# firefox                  # Firefox - via snap
+# chrome                   # Chrome - via .deb
+# 
+# NOTA: VS Code Server é instalado automaticamente quando você usa
+# Remote Development no VS Code Desktop, não precisa instalar via mise

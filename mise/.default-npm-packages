@@ -1,3 +1,36 @@
-neovim
-tree-sitter-cli
+# Pacotes Node.js globais essenciais instalados automaticamente pelo mise
+# Já instalados
+neovim                  # Neovim Node.js support
+tree-sitter-cli         # Parser generator tool
+expo-cli                # React Native development
+
+# Ferramentas de desenvolvimento
+typescript              # TypeScript compiler
+ts-node                 # Execute TypeScript directly
+nodemon                 # Auto-restart durante desenvolvimento
+npm-check-updates       # Atualizar dependências (ncu)
+
+# Linters e formatadores
+eslint                  # JavaScript/TypeScript linter
+prettier                # Code formatter
+stylelint               # CSS linter
+
+# Ferramentas de build
+vite                    # Build tool moderno
+rollup                  # Module bundler
+
+# CLI tools úteis
+serve                   # Static file server
+http-server             # Simple HTTP server
+json-server             # Mock REST API
+live-server             # Development server com live reload
+
+# Package managers
+pnpm                    # Package manager rápido
+
+# Framework CLIs
+create-react-app        # React project creator
+@angular/cli            # Angular CLI
+@vue/cli                # Vue CLI
+create-next-app         # Next.js project creator
 

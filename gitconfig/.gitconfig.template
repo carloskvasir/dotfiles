@@ -1,0 +1,107 @@
+# Git Configuration Template
+# Copy this to '.gitconfig' and customize with your information
+# NEVER commit with real personal information
+
+[user]
+	email = your-email@example.com
+	name = Your Full Name
+
+[core]
+	editor = nvim
+	autocrlf = input
+	safecrlf = true
+	excludesfile = ~/.gitignore_global
+
+[init]
+	defaultBranch = main
+
+[pull]
+	rebase = true
+
+[push]
+	default = simple
+	autoSetupRemote = true
+
+[merge]
+	tool = vimdiff
+	conflictstyle = diff3
+
+[diff]
+	tool = vimdiff
+	colorMoved = default
+
+[color]
+	ui = auto
+	branch = auto
+	diff = auto
+	status = auto
+
+[color "branch"]
+	current = yellow reverse
+	local = yellow
+	remote = green
+
+[color "diff"]
+	meta = yellow bold
+	frag = magenta bold
+	old = red bold
+	new = green bold
+
+[color "status"]
+	added = yellow
+	changed = green
+	untracked = cyan
+
+[alias]
+	# Logs
+	lg = log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit
+	lol = log --graph --decorate --pretty=oneline --abbrev-commit
+	lola = log --graph --decorate --pretty=oneline --abbrev-commit --all
+	
+	# Status
+	st = status
+	s = status -s
+	
+	# Checkout
+	co = checkout
+	cob = checkout -b
+	
+	# Branch
+	br = branch
+	bra = branch -a
+	
+	# Commit
+	cm = commit
+	cma = commit -a
+	cam = commit -am
+	
+	# Add
+	a = add
+	aa = add .
+	ap = add -p
+	
+	# Push/Pull
+	ps = push
+	pl = pull
+	pom = push origin main
+	
+	# Reset
+	unstage = reset HEAD --
+	last = log -1 HEAD
+	
+	# Diff
+	d = diff
+	dc = diff --cached
+	
+	# Stash
+	save = stash save
+	pop = stash pop
+
+[credential]
+	helper = store
+
+[rerere]
+	enabled = true
+
+[help]
+	autocorrect = 1

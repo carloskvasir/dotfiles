@@ -1,2 +1,72 @@
 
+# 🔒 Dotfiles Security Configuration
+# Protege informações sensíveis em todo o repositório
+
+# === INFORMAÇÕES PESSOAIS SENSÍVEIS ===
+# Configurações SSH com IPs reais
+ssh/.ssh/config
+ssh/.ssh/known_hosts*
+ssh/.ssh/authorized_keys*
+
+# Configurações Git pessoais
+gitconfig/.gitconfig
+
+# === CHAVES SSH (TODOS OS FORMATOS) ===
+*.key
+*.pem
+*_rsa
+*_rsa.pub
+*_ed25519
+*_ed25519.pub
+*_ecdsa
+*_ecdsa.pub
+*_dsa
+*_dsa.pub
+id_*
+
+# === ARQUIVOS DE CONFIGURAÇÃO LOCAIS ===
+*.local
+*.backup
+*.bak
+*.tmp
+*.old
+
+# === LOGS E CACHE ===
+*.log
+*.cache
+.DS_Store
+Thumbs.db
+
+# === CONFIGURAÇÕES ESPECÍFICAS DO SISTEMA ===
+# Configurações que podem conter informações pessoais
+gitconfig/.gitconfig.local
+zsh/.zshrc.local
+tmux/.tmux.conf.local
+
+# === DIRETÓRIOS TEMPORÁRIOS ===
+temp/
+tmp/
+.tmp/
+cache/
+
+# === ARQUIVOS DE BACKUP ===
+*~
+*.swp
+*.swo
+.backup
+
+# === CONFIGURAÇÕES DE IDE ===
+.vscode/settings.json
+.idea/
+
+# === ARQUIVOS EXISTENTES ===
 nvim/.config/nvim/.netrwhist
+.aider*
+.env
+
+# === SEMPRE PERMITIR ===
+!*.template
+!*.example
+!.gitignore
+!README.md
+!LICENSE
