@@ -1,31 +1,38 @@
-# 🏠 Dotfiles
+# Dotfiles
 
-Personal dotfiles configuration managed with GNU Stow. These dotfiles provide a modern and efficient development environment with focus on productivity and ease of use.
+Personal dotfiles configuration managed with GNU Stow and Mise. These dotfiles provide a modern and efficient development environment with focus on productivity, security, and ease of use.
 
-## ✨ What's Included
-
-- 🐚 **Zsh Configuration**
-  - Custom aliases and functions
+## functions
   - Syntax highlighting and autosuggestions
-  - Spaceship prompt theme
+  - Starship prompt theme
   - FZF integration for fuzzy finding
+  - Modern shell tools integration
   
-- 🛠️ **Development Tools**
-  - Mise (formerly asdf) for version management
-  - Node.js, Python, Ruby, Go, and more
-  - Neovim configuration
-  - Git aliases and configurations
+- **Development Tools via Mise**
+  - **Languages**: Node.js 22.16, Python 3.12, Ruby 3, Go, Rust, Java 24, Lua
+  - **Editors**: Neovim (latest)
+  - **Build Tools**: Terraform, Maven, Yarn, Just
+  - **Modern CLI Tools**: ripgrep, fzf, fd, bat, eza, delta, dust, bottom, zoxide
+  - **Git Tools**: lazygit, gh, glab, pre-commit, git-cliff
+  - **Web Development**: Deno, Bun, TypeScript tools
+  - **DevOps**: gcloud, aws-cli, kubectl
   
-- 📋 **System Utilities**
-  - Advanced clipboard management
-  - Modern command-line tools (ripgrep, fzf, etc.)
-  - Container tools (Podman/Docker)
+- **Package Management**
+  - **Python**: aider, black, flake8, mypy, pytest, httpie, rich, typer
+  - **Node.js**: TypeScript, ESLint, Prettier, nodemon
+  - **Ruby**: bundler, pry, rubocop, solargraph
+  
+- **Security Features**
+  - Templates for sensitive configurations
+  - Comprehensive .gitignore protection
+  - Security audit capabilities
 
-## 🚀 Prerequisites
+## Prerequisites
 
-### Required packages
+### System packages (managed by package manager)
 
 ```bash
+# Basic requirements - install via package manager
 sudo apt install -y \
   git \
   zsh \
@@ -34,30 +41,34 @@ sudo apt install -y \
   wget \
   xsel \
   xclip \
-  batcat \
-  ripgrep \
-  fzf \
-  podman \
   build-essential \
   rsync
+
+# Additional dependencies for mise
+gcc autoconf make unixodbc unzip
 ```
 
-### Development tools
-- Git
-- Zsh
-- [GNU Stow](https://www.gnu.org/software/stow/)
-- [Mise](https://mise.jdx.dev/) (for version management)
+### Development tools (managed by Mise)
+All development tools and language runtimes are automatically managed by [Mise](https://mise.jdx.dev/):
 
-## 📥 Installation
+- **Languages**: Node.js, Python, Ruby, Go, Rust, Java, Lua
+- **CLI Tools**: ripgrep, fzf, fd, bat, eza, delta, bottom, zoxide, starship
+- **Git Tools**: lazygit, gh, glab, pre-commit, git-cliff  
+- **Build Tools**: terraform, maven, yarn, just
+- **Development**: neovim, deno, bun, kubectl
 
-1. Clone the repository:
-```zsh
+**Note**: No need to install these manually - Mise will handle everything!
+
+## Installation
+
+1. **Clone the repository:**
+```bash
 git clone git@github.com:carloskvasir/dotfiles.git ~/.dotfiles
 cd ~/.dotfiles
 ```
 
-2. Install configurations using stow:
-```zsh
+2. **Install configurations using stow:**
+```bash
 # Install everything
 stow */
 
@@ -65,43 +76,192 @@ stow */
 stow zsh        # Install only zsh config
 stow mise       # Install mise config
 stow aliases    # Install aliases
+stow tmux       # Install tmux config
+stow nvim       # Install neovim config
 ```
 
-3. Install development tools with mise:
-```zsh
+3. **Install development tools with mise:**
+```bash
+# Install Mise first
+curl https://mise.jdx.dev/install.sh | sh
+
+# Reload shell to activate mise
+exec zsh
+
 # Install all tools defined in mise config
 mise install
 
-# Install Python packages
-mise use python
+# All languages and tools are now available!
+# Check installation
+mise list
 ```
 
-## 🔄 Updating
+4. **Setup personal configurations (IMPORTANT):**
+```bash
+# Copy SSH template for personal use
+cp ssh/.ssh/config.template ssh/.ssh/config
+# Edit with your real SSH configurations
+vim ssh/.ssh/config
 
-To update your dotfiles:
+# Copy Git template for personal use  
+cp gitconfig/.gitconfig.template gitconfig/.gitconfig
+# Edit with your real name and email
+vim gitconfig/.gitconfig
+```
 
-```zsh
+## Security
+
+This dotfiles repository includes security features to protect sensitive information:
+
+- **Templates**: Sensitive files (SSH config, Git config) use `.template` versions
+- **Protection**: Comprehensive `.gitignore` prevents committing sensitive data
+- **Audit**: Security audit script available (when created)
+
+**Important**: Never commit real SSH configurations, API keys, or personal information!
+
+## Updating
+
+To update your dotfiles and tools:
+
+```bash
 cd ~/.dotfiles
+
+# Update dotfiles configurations
 git pull
-stow */  # Re-stow all configurations
+
+# Re-stow all configurations
+stow */
+
+# Update all mise tools to latest versions
+mise upgrade
+
+# Update specific language packages
+mise exec python -- pip install --upgrade pip
+mise exec node -- npm update -g
+mise exec ruby -- bundle update
 ```
 
-## 🎨 Customization
+## Customization
 
-You can customize these dotfiles by:
+### Adding New Tools
+1. **Languages/CLI Tools**: Edit `mise/.config/mise/config.toml`
+2. **Python Packages**: Edit `mise/.default-python-packages`  
+3. **Node.js Packages**: Edit `mise/.default-npm-packages`
+4. **Ruby Gems**: Edit `mise/.default-gems`
+5. **Shell Aliases**: Edit `aliases/.aliases`
+6. **Zsh Configuration**: Edit `zsh/.zshrc`
 
-1. Editing the respective configuration files
-2. Adding new tools in `mise/.config/mise/config.toml`
-3. Creating new aliases in `aliases/.aliases`
-4. Modifying Zsh plugins in `zsh/.zshrc`
+### Personal Configurations
+- **SSH**: Edit `ssh/.ssh/config` (your personal copy)
+- **Git**: Edit `gitconfig/.gitconfig` (your personal copy)
+- **Local overrides**: Create `.local` versions of any config file
 
-## 👤 Author
+### Example: Adding a new tool
+```bash
+# Add to mise config
+echo 'hugo = "latest"' >> mise/.config/mise/config.toml
+
+# Install the new tool
+mise install hugo
+
+# Use it
+hugo version
+```
+
+## Directory Structure
+
+```
+~/.dotfiles/
+├── aliases/           # Shell aliases and functions
+├── gitconfig/         # Git configuration (template)
+├── mise/              # Development tools and version management
+│   ├── .config/mise/config.toml    # Tool definitions
+│   ├── .default-python-packages    # Python packages
+│   ├── .default-npm-packages       # Node.js packages
+│   └── .default-gems              # Ruby gems
+├── nvim/              # Neovim configuration
+├── ssh/               # SSH configuration (template)
+├── tmux/              # Terminal multiplexer config
+├── zsh/               # Zsh shell configuration
+├── kitty/             # Kitty terminal config
+├── i3/                # i3 window manager config
+└── xmodmap/           # Keyboard mapping config
+```
+
+## What You Get
+
+After installation, you'll have access to:
+
+### Modern CLI Tools
+- `rg` - ripgrep (faster grep)
+- `fd` - modern find
+- `bat` - cat with syntax highlighting  
+- `eza` - modern ls
+- `fzf` - fuzzy finder
+- `zoxide` - smart cd (z command)
+- `delta` - better git diff
+- `bottom` - modern htop
+- `lazygit` - git TUI
+
+### Development Environment
+- **Multi-language support**: Node.js, Python, Ruby, Go, Rust, Java
+- **Package managers**: npm, pip, bundler, go mod
+- **Modern editors**: Neovim with LSP support
+- **Version management**: Seamless switching between language versions
+
+### Productivity Features  
+- **Smart shell**: Auto-completion, syntax highlighting
+- **Git integration**: Enhanced diff, aliases, workflows
+- **Terminal multiplexing**: tmux with custom config
+- **Modern prompt**: Starship with git status and language info
+
+## Troubleshooting
+
+### Common Issues
+
+**Mise not found after installation:**
+```bash
+# Add to your shell profile
+echo 'eval "$(~/.local/bin/mise activate zsh)"' >> ~/.zshrc
+exec zsh
+```
+
+**Tool installation fails:**
+```bash
+# Check mise status
+mise doctor
+
+# Install dependencies
+sudo apt install -y build-essential
+
+# Retry installation
+mise install
+```
+
+**Stow conflicts:**
+```bash
+# Remove existing configs first
+rm ~/.zshrc ~/.gitconfig
+
+# Then stow
+stow zsh gitconfig
+```
+
+**SSH/Git templates not working:**
+```bash
+# Make sure you copied templates to real files
+cp ssh/.ssh/config.template ssh/.ssh/config
+cp gitconfig/.gitconfig.template gitconfig/.gitconfig
+
+# Edit with your real information
+```
+
+## Author
 
 **Carlos Kvasir**
 
-- 🌐 Website: [carloskvasir.dev](https://carloskvasir.dev)
+- 🌐 Website: [kvasir.dev](https://kvasir.dev)
 - 💼 LinkedIn: [carloskvasir](https://linkedin.com/in/carloskvasir)
-- 💻 Github: [@carloskvasir](https://github.com/carloskvasir)
 
 ## 📝 License
 
