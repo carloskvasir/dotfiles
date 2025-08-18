@@ -4,23 +4,51 @@ Personal dotfiles configuration managed with GNU Stow and Mise. These dotfiles p
 
 ## 🚀 DevContainer & CI/CD
 
-Este repositório inclui um ambiente DevContainer pronto para uso e integração contínua (CI) via GitHub Actions.
+Este repositório inclui um ambiente DevContainer otimizado pronto para uso, com imagem disponível no GitHub Container Registry.
 
-### Como usar o DevContainer
+### 🐳 Opções de Uso do DevContainer
 
-1. Instale o [VS Code](https://code.visualstudio.com/) e a extensão [Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers).
+#### Opção 1: Imagem Pré-construída (Mais Rápida)
+```bash
+# Pull da imagem oficial do registry
+docker pull ghcr.io/carloskvasir/dotfiles/devcontainer:latest
+
+# Executar diretamente
+docker run -it --rm -v $(pwd):/workspace ghcr.io/carloskvasir/dotfiles/devcontainer:latest
+```
+
+#### Opção 2: VS Code Dev Containers (Recomendado)
+1. Instale o [VS Code](https://code.visualstudio.com/) e a extensão [Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
 2. Clone o repositório:
-  ```bash
-  git clone https://github.com/carloskvasir/dotfiles.git
-  cd dotfiles
-  ```
-3. Abra no VS Code e selecione "Reabrir no Container" quando solicitado.
-4. Aguarde a configuração automática do ambiente.
+   ```bash
+   git clone https://github.com/carloskvasir/dotfiles.git
+   cd dotfiles
+   ```
+3. Abra no VS Code e selecione "Reabrir no Container" quando solicitado
+4. Aguarde a configuração automática (3-5 minutos)
+
+#### Opção 3: Build Local com Makefile
+```bash
+cd dotfiles
+make dev-up        # Inicia ambiente completo com Docker Compose
+make dev-shell     # Acesso direto ao shell do container
+make dev-down      # Para e remove containers
+```
+
+### 🎯 Benefícios do DevContainer
+
+- ✅ **Ambiente Consistente**: Mesma configuração em qualquer máquina
+- ⚡ **Build Otimizado**: Multi-stage build com cache (60-80% mais rápido)
+- 🔄 **Volumes Persistentes**: Settings e cache preservados entre sessões
+- 🛠️ **Ferramentas Pré-instaladas**: +50 ferramentas prontas para uso
+- 🔒 **Isolamento**: Não afeta o sistema host
 
 ### CI/CD
 
-O build do DevContainer é testado automaticamente a cada push ou pull request via GitHub Actions.
-Workflow file: `.github/workflows/devcontainer.yml`
+O build do DevContainer é testado automaticamente via GitHub Actions:
+- **Registry**: Imagens publicadas em `ghcr.io/carloskvasir/dotfiles/devcontainer`
+- **Testes**: Validação automática de funcionalidade e performance
+- **Workflow**: `.github/workflows/devcontainer-advanced.yml`
 
 ---
 
@@ -351,15 +379,48 @@ The DevContainer uses a **multi-stage Docker build** for optimal performance:
 
 ### Manual DevContainer Operations
 ```bash
-# Build manually (if needed)
+# === Usando Make (Recomendado) ===
+make dev-up           # Inicia ambiente completo
+make dev-shell        # Acesso direto ao shell
+make dev-down         # Para todos os containers
+make dev-rebuild      # Rebuild completo
+make status           # Status do ambiente
+make benchmark        # Testa performance
+
+# === Docker Compose ===
 cd .devcontainer
-./build.sh
+docker-compose up -d                    # Inicia em background
+docker-compose exec devcontainer zsh    # Acesso ao shell
+docker-compose down                     # Para containers
 
-# Using Docker Compose
-docker-compose -f .devcontainer/docker-compose.yml up
+# === Docker Direto ===
+# Usar imagem do registry (mais rápido)
+docker run -it --rm \
+  -v $(pwd):/workspaces/dotfiles \
+  -v dotfiles-cache:/home/vscode/.cache \
+  ghcr.io/carloskvasir/dotfiles/devcontainer:latest
 
-# Rebuild in VS Code
+# Build local se necessário
+docker build -t dotfiles-dev .devcontainer/
+
+# === VS Code ===
+# Command Palette > "Dev Containers: Reopen in Container"
 # Command Palette > "Dev Containers: Rebuild Container"
+```
+
+**📋 Comandos de Verificação:**
+```bash
+# Status do ambiente
+make status
+
+# Verificar ferramentas instaladas
+mise list
+
+# Teste de funcionalidade
+make test
+
+# Benchmark de performance
+make benchmark
 ```
 
 ## 🔧 Customization
@@ -496,25 +557,55 @@ After installation, you'll have access to:
 
 ### DevContainer Issues
 
-**Container fails to build:**
+**Container não inicia ou falha no build:**
 ```bash
-# Check Docker is running
+# Verificar se Docker está rodando
 docker ps
 
-# Clear Docker cache and rebuild
-docker system prune -f
-# In VS Code: "Dev Containers: Rebuild Container (No Cache)"
+# Usar imagem pré-construída do registry
+docker pull ghcr.io/carloskvasir/dotfiles/devcontainer:latest
+
+# Limpar cache e rebuild (VS Code)
+# Command Palette > "Dev Containers: Rebuild Container (No Cache)"
+
+# Build manual com logs detalhados
+cd .devcontainer
+make build-verbose
 ```
 
-**Tools not found in DevContainer:**
+**Ferramentas não encontradas no DevContainer:**
 ```bash
-# Check if setup completed
+# Verificar se setup foi concluído
 cd /workspaces/dotfiles
-./devcontainer/setup.sh
+cat INSTALLATION_STATUS.md
 
-# Manually install tools
-mise install
+# Recarregar ambiente
 source ~/.zshrc
+
+# Reinstalar ferramentas se necessário
+mise install
+```
+
+**Performance lenta no DevContainer:**
+```bash
+# Usar imagem otimizada do registry
+docker pull ghcr.io/carloskvasir/dotfiles/devcontainer:latest
+
+# Verificar recursos alocados ao Docker
+docker stats
+
+# Usar volumes nomeados para cache
+make dev-up  # Usa docker-compose com volumes otimizados
+```
+
+**Problemas de permissão no DevContainer:**
+```bash
+# Verificar usuário atual
+whoami  # Deve ser 'vscode'
+
+# Corrigir permissões se necessário
+sudo chown -R vscode:vscode /workspaces/dotfiles
+sudo chown -R vscode:vscode ~/.cache ~/.local
 ```
 
 ### Installation Issues
@@ -666,7 +757,12 @@ A: Primarily designed for Linux. Some tools may work on macOS. Windows support v
 **Q: How often should I update?**
 A: Run `git pull && mise upgrade` weekly to get latest configs and tool versions.
 
-## 🔗 Related Projects
+## � Documentação Completa
+
+- **[USAGE_GUIDE.md](USAGE_GUIDE.md)** - Guia completo de uso do DevContainer
+- **[QUICK_START.md](QUICK_START.md)** - Início rápido e comandos essenciais  
+- **[SECURITY_GUIDE.md](SECURITY_GUIDE.md)** - Guia de segurança e boas práticas
+- **[mise/MISE_TOOLS_GUIDE.md](mise/MISE_TOOLS_GUIDE.md)** - Guia das ferramentas disponíveis
 
 - **[GNU Stow](https://www.gnu.org/software/stow/)** - Symlink farm manager
 - **[Mise](https://mise.jdx.dev/)** - Dev tools, env vars, task runner
@@ -695,7 +791,6 @@ Contributions are welcome! Please:
 **Carlos Kvasir**
 - 🌐 Website: [kvasir.dev](https://kvasir.dev)  
 - 💼 LinkedIn: [carloskvasir](https://linkedin.com/in/carloskvasir)
-- 📧 Email: carlos@kvasir.dev
 
 ## ⭐ Support
 
