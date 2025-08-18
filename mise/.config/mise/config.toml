@@ -15,7 +15,7 @@ neovim = "latest"           # Editor moderno
 terraform = "latest"        # Infrastructure as Code
 maven = "latest"            # Build tool para Java
 yarn = "latest"             # Package manager JS alternativo
-just = "1.39"               # Command runner moderno
+# just = "1.39"               # Command runner moderno
 # podman = "latest"           # Alternativa ao Docker
 
 # === Ferramentas de Linha de Comando ===
@@ -32,47 +32,32 @@ starship = "latest"         # Prompt moderno
 hyperfine = "latest"        # Benchmarking de comandos
 tokei = "latest"            # Contador de linhas de código
 git-cliff = "latest"        # Gerador de changelog
-gh = "latest"               # GitHub CLI
-glab = "latest"             # GitLab CLI
+# gh = "latest"               # GitHub CLI
+# glab = "latest"             # GitLab CLI
 
 # === Git e Versionamento ===
 lazygit = "latest"          # Git TUI
-#git-delta = "latest"        # Git diff viewer
+# git-delta = "latest"        # Git diff viewer
 pre-commit = "latest"       # Git hooks
 
-# === Desenvolvimento Web ===
-deno = "latest"             # Runtime JS/TS moderno
-bun = "latest"              # Runtime JS ultra-rápido
 
 # === DevOps e Cloud ===
-gcloud = "latest"           # Google Cloud CLI
+# gcloud = "latest"           # Google Cloud CLI
 aws-cli = "latest"          # AWS CLI
-kubectl = "latest"          # Kubernetes CLI
-helm = "latest"             # Kubernetes package manager
-k9s = "latest"              # Kubernetes TUI
+# kubectl = "latest"          # Kubernetes CLI
+# helm = "latest"             # Kubernetes package manager
+# k9s = "latest"              # Kubernetes TUI
 
 # === Ferramentas de Sistema ===
 tmux = "latest"             # Terminal multiplexer
-#htop = "latest"             # Monitor de sistema
-#tree = "latest"             # Visualizador de árvore
 jq = "latest"               # JSON processor
 yq = "latest"               # YAML processor
-#curl = "latest"             # HTTP client
-#wget = "latest"             # Download utility
 
 # === Python específico ===
 uv = "latest"               # Package manager Python ultra-rápido
 poetry = "latest"           # Dependency management Python
 pipx = "latest"             # Install Python apps in isolated envs
 
-# === Desenvolvimento Mobile ===
-android-sdk = "19.0"        # Android development
-
-# === Outras ferramentas úteis ===
-usage = "latest"            # Especificação de CLI
-direnv = "latest"           # Environment per directory
-shellcheck = "latest"       # Shell script linter
-shfmt = "latest"            # Shell script formatter
 
 [settings]
 experimental = true         # Ativa recursos experimentais no Mise

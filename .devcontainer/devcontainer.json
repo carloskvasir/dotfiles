@@ -1,16 +1,53 @@
 {
-  "name": "Debian 13 Codespace",
-  "build": {
-    "dockerfile": "Dockerfile"
-  },
+  "name": "Dotfiles Multi-Stage Environment",
+  
+  // Use Docker Compose for better performance and caching
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "devcontainer",
+  "workspaceFolder": "/workspaces/dotfiles",
+  
+  "mounts": [
+    "source=${localWorkspaceFolder},target=/workspaces/dotfiles,type=bind,consistency=cached"
+  ],
+  
   "customizations": {
     "vscode": {
       "settings": {
-        "terminal.integrated.defaultProfile.linux": "zsh"
-      }
+        "terminal.integrated.defaultProfile.linux": "zsh",
+        "terminal.integrated.cwd": "/workspaces/dotfiles",
+        "mise.enableShellIntegration": true
+      },
+      "extensions": [
+        "ms-vscode.vscode-json",
+        "redhat.vscode-yaml", 
+        "ms-python.python",
+        "bradlc.vscode-tailwindcss"
+      ]
     }
   },
-  "features": {},
-  "postCreateCommand": "echo 'Seu devcontainer está online! KISS: Keep It Simple, Stupid 🤘'",
-  "remoteUser": "devpetit"
+  
+  "features": {
+    // Use features for additional tools instead of Dockerfile when possible
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "dockerComposeVersion": "v2"
+    }
+  },
+  
+  "postCreateCommand": [
+    "bash", "-c", 
+    "chmod +x /workspaces/dotfiles/.devcontainer/setup.sh && /workspaces/dotfiles/.devcontainer/setup.sh"
+  ],
+  
+  "remoteUser": "vscode",
+  
+  // Performance optimizations
+  "initializeCommand": "echo 'Initializing multi-stage DevContainer...'",
+  "onCreateCommand": "echo 'Container created successfully!'",
+  "updateContentCommand": "echo 'Updating content...'",
+  
+  // Resource limits
+  "hostRequirements": {
+    "memory": "2gb",
+    "storage": "8gb"
+  }
 }
