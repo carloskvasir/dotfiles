@@ -17,7 +17,13 @@ echo ""
 
 # Test basic build first
 echo "🏗️  Testing basic build..."
-cd /home/carlos/.dotfiles
+
+# Change to repository root regardless of where script is run
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+cd "$REPO_ROOT"
+
+echo "Current directory: $(pwd)"
 
 echo "Building base-deps stage..."
 docker build \

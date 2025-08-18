@@ -15,12 +15,55 @@ echo -e "${BLUE}🚀 Manual Push to GitHub Container Registry${NC}"
 echo -e "${BLUE}==========================================${NC}"
 echo ""
 
-# Configuration
-GITHUB_USERNAME="carloskvasir"
-REPOSITORY_NAME="dotfiles"
-LOCAL_IMAGE="dotfiles-dev:runtime"
+# Configuration - Dynamic user detection
+GITHUB_USERNAME="${GITHUB_USERNAME:-$(git config user.name || echo "$(whoami)")}"
+REPOSITORY_NAME="${REPOSITORY_NAME:-$(basename "$(git rev-parse --show-toplevel 2>/dev/null || echo "dotfiles")")}"
 REGISTRY="ghcr.io"
+
+# Auto-detect from git remote if available
+if git remote get-url origin &>/dev/null; then
+    REPO_URL=$(git remote get-url origin)
+    if [[ "$REPO_URL" =~ github\.com[:/]([^/]+)/([^/.]+) ]]; then
+        GITHUB_USERNAME="${BASH_REMATCH[1]}"
+        REPOSITORY_NAME="${BASH_REMATCH[2]}"
+    fi
+fi
+
 REMOTE_IMAGE="${REGISTRY}/${GITHUB_USERNAME}/${REPOSITORY_NAME}/devcontainer"
+
+# Try different possible local image names
+POSSIBLE_LOCAL_IMAGES=(
+    "dotfiles-dev:runtime"
+    "dotfiles-dev:latest"
+    "dotfiles-devcontainer:runtime"
+    "dotfiles-devcontainer:latest"
+)
+
+LOCAL_IMAGE=""
+for img in "${POSSIBLE_LOCAL_IMAGES[@]}"; do
+    if docker image inspect "$img" &> /dev/null; then
+        LOCAL_IMAGE="$img"
+        break
+    fi
+done
+
+if [[ -z "$LOCAL_IMAGE" ]]; then
+    echo -e "${RED}❌ No local image found${NC}"
+    echo ""
+    echo "Imagens tentadas:"
+    for img in "${POSSIBLE_LOCAL_IMAGES[@]}"; do
+        echo "   - $img"
+    done
+    echo ""
+    echo "Imagens Docker disponíveis:"
+    docker images | grep -E "(dotfiles|devcontainer)" || echo "   Nenhuma imagem relacionada encontrada"
+    echo ""
+    echo "Build a imagem primeiro com:"
+    echo "   ./.devcontainer/build-production.sh"
+    echo "   ou"
+    echo "   cd \$(git rev-parse --show-toplevel) && ./.devcontainer/build-production.sh"
+    exit 1
+fi
 
 echo -e "${YELLOW}📋 Configuration:${NC}"
 echo "   Local Image: $LOCAL_IMAGE"
@@ -30,19 +73,10 @@ echo ""
 
 # Step 1: Check if local image exists
 echo -e "${YELLOW}🔍 Step 1: Checking local image...${NC}"
-if docker image inspect "$LOCAL_IMAGE" &> /dev/null; then
-    echo -e "${GREEN}✅ Local image found: $LOCAL_IMAGE${NC}"
-    docker images | grep "dotfiles-dev" | head -3
-else
-    echo -e "${RED}❌ Local image not found: $LOCAL_IMAGE${NC}"
-    echo ""
-    echo "Build the image first with:"
-    echo "   ./.devcontainer/build-production.sh"
-    echo "   or"
-    echo "   docker build -t $LOCAL_IMAGE -f .devcontainer/Dockerfile ."
-    exit 1
-fi
-
+echo -e "${GREEN}✅ Local image found: $LOCAL_IMAGE${NC}"
+echo ""
+echo "Todas as imagens relacionadas:"
+docker images | grep -E "(dotfiles|devcontainer)" | head -5
 echo ""
 
 # Step 2: Login to GitHub Container Registry

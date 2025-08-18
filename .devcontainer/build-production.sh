@@ -14,44 +14,77 @@ YELLOW='\033[0;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Build configuration
+# Auto-detect repository root and set correct paths
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+# Build configuration - Professional path management
 IMAGE_NAME="dotfiles-dev"
 IMAGE_TAG="latest"
-BUILD_CONTEXT="../"
-DOCKERFILE_PATH="Dockerfile"
+
+# Determine paths based on current working directory
+if [[ "$(basename "$PWD")" == ".devcontainer" ]]; then
+    # Running from .devcontainer directory
+    BUILD_CONTEXT="../"
+    DOCKERFILE_PATH="Dockerfile"
+    echo -e "${BLUE}📁 Detectado: Executando de .devcontainer/${NC}"
+else
+    # Running from repository root
+    BUILD_CONTEXT="."
+    DOCKERFILE_PATH=".devcontainer/Dockerfile"
+    echo -e "${BLUE}📁 Detected: Running from repository root${NC}"
+fi
 
 echo -e "${BLUE}📋 Build Configuration:${NC}"
 echo "   Image: $IMAGE_NAME:$IMAGE_TAG"
 echo "   Context: $BUILD_CONTEXT"
-echo "   Dockerfile: .devcontainer/$DOCKERFILE_PATH"
+echo "   Dockerfile: $DOCKERFILE_PATH"
+echo "   Script Dir: $SCRIPT_DIR"
+echo "   Repo Root: $REPO_ROOT"
 echo ""
 
 # Debug: Verificar variáveis
-echo -e "${YELLOW}🔍 Debug - Verificando variáveis:${NC}"
+echo -e "${YELLOW}🔍 Debug - Verificando configuração:${NC}"
 echo "   IMAGE_NAME='$IMAGE_NAME'"
 echo "   IMAGE_TAG='$IMAGE_TAG'" 
 echo "   BUILD_CONTEXT='$BUILD_CONTEXT'"
 echo "   DOCKERFILE_PATH='$DOCKERFILE_PATH'"
+echo "   PWD='$PWD'"
 echo "   Full tag example: '${IMAGE_NAME}:user-setup'"
 echo ""
 
-# Step 1: Pre-build validation
+# Step 1: Pre-build validation with smart path detection
 echo -e "${YELLOW}🔍 Step 1: Pre-build validation${NC}"
 echo "Verificando arquivos necessários..."
 
-required_files=(
-    "mise/.config/mise/config.toml"
-    "mise/.default-python-packages"  
-    "mise/.default-npm-packages"
-    ".devcontainer/Dockerfile"
-    ".devcontainer/test-zsh-mise.sh"
-)
+# Define file paths relative to repository root
+if [[ "$(basename "$PWD")" == ".devcontainer" ]]; then
+    required_files=(
+        "../mise/.config/mise/config.toml"
+        "../mise/.default-python-packages"  
+        "../mise/.default-npm-packages"
+        "Dockerfile"
+        "test-zsh-mise.sh"
+        "install-mise-tools.sh"
+    )
+else
+    required_files=(
+        "mise/.config/mise/config.toml"
+        "mise/.default-python-packages"  
+        "mise/.default-npm-packages"
+        ".devcontainer/Dockerfile"
+        ".devcontainer/test-zsh-mise.sh"
+        ".devcontainer/install-mise-tools.sh"
+    )
+fi
 
 for file in "${required_files[@]}"; do
-    if [[ -f "$BUILD_CONTEXT/$file" ]]; then
+    if [[ -f "$file" ]]; then
         echo -e "${GREEN}✅${NC} $file"
     else
         echo -e "${RED}❌${NC} $file - MISSING"
+        echo -e "${YELLOW}💡 Arquivos encontrados no diretório atual:${NC}"
+        ls -la | head -10
         exit 1
     fi
 done
@@ -95,9 +128,13 @@ echo "Building base-deps stage..."
 docker build \
     --target base-deps \
     --tag "${IMAGE_NAME}:base-deps" \
-    --file ".devcontainer/${DOCKERFILE_PATH}" \
-    "${BUILD_CONTEXT}" || {
+    --file "$DOCKERFILE_PATH" \
+    "$BUILD_CONTEXT" || {
     echo -e "${RED}❌ Falha no stage base-deps${NC}"
+    echo -e "${YELLOW}💡 Debug info:${NC}"
+    echo "   Dockerfile path: $DOCKERFILE_PATH"
+    echo "   Build context: $BUILD_CONTEXT"
+    echo "   Current dir: $PWD"
     exit 1
 }
 echo -e "${GREEN}✅ Stage base-deps concluído${NC}"
@@ -106,8 +143,8 @@ echo "Building user-setup stage..."
 docker build \
     --target user-setup \
     --tag "${IMAGE_NAME}:user-setup" \
-    --file ".devcontainer/${DOCKERFILE_PATH}" \
-    "${BUILD_CONTEXT}" || {
+    --file "$DOCKERFILE_PATH" \
+    "$BUILD_CONTEXT" || {
     echo -e "${RED}❌ Falha no stage user-setup${NC}"
     exit 1
 }
@@ -117,8 +154,8 @@ echo "Building tools-cache stage..."
 docker build \
     --target tools-cache \
     --tag "${IMAGE_NAME}:tools-cache" \
-    --file ".devcontainer/${DOCKERFILE_PATH}" \
-    "${BUILD_CONTEXT}" || {
+    --file "$DOCKERFILE_PATH" \
+    "$BUILD_CONTEXT" || {
     echo -e "${RED}❌ Falha no stage tools-cache${NC}"
     exit 1
 }
@@ -128,8 +165,8 @@ echo "Building final runtime stage..."
 docker build \
     --target runtime \
     --tag "${IMAGE_NAME}:${IMAGE_TAG}" \
-    --file ".devcontainer/${DOCKERFILE_PATH}" \
-    "${BUILD_CONTEXT}" || {
+    --file "$DOCKERFILE_PATH" \
+    "$BUILD_CONTEXT" || {
     echo -e "${RED}❌ Falha no stage final${NC}"
     exit 1
 }

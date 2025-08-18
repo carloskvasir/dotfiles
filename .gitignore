@@ -70,3 +70,12 @@ nvim/.config/nvim/.netrwhist
 !.gitignore
 !README.md
 !LICENSE
+# Security - Personal Information
+.env.local
+.env.*.local
+*.p12
+*.pfx
+.security_backup_*
+# IDE and Editor
+# OS Generated
+ehthumbs.db

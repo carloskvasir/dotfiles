@@ -6,7 +6,9 @@ set -e
 echo "🔍 Validação do config.toml do mise"
 echo "=================================="
 
-CONFIG_FILE="/home/carlos/.dotfiles/mise/.config/mise/config.toml"
+# Configuration - Dynamic path detection
+REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+CONFIG_FILE="$REPO_ROOT/mise/.config/mise/config.toml"
 
 # Verificar se o arquivo existe
 if [[ ! -f "$CONFIG_FILE" ]]; then
