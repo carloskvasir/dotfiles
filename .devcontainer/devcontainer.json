@@ -1,0 +1,16 @@
+{
+  "name": "Debian 13 Codespace",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "zsh"
+      }
+    }
+  },
+  "features": {},
+  "postCreateCommand": "echo 'Seu devcontainer está online! KISS: Keep It Simple, Stupid 🤘'",
+  "remoteUser": "devpetit"
+}
