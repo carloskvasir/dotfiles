@@ -2,6 +2,11 @@
 
 Choose your preferred installation method:
 
+## 🐳 DevContainer & CI/CD
+
+O ambiente DevContainer pode ser usado no VS Code para configuração automática.
+The container build is validated via GitHub Actions (`.github/workflows/devcontainer.yml`).
+
 ## 🥇 DevContainer (Recommended - Zero Config)
 
 ```bash

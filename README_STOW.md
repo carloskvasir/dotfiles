@@ -2,6 +2,15 @@
 
 This repository contains my personal configurations organized for use with GNU Stow.
 
+## 🐳 DevContainer & CI/CD
+
+Este repositório possui suporte a DevContainer e CI/CD no GitHub Actions.
+
+- Para usar o DevContainer, abra o projeto no VS Code e selecione "Reabrir no Container".
+- The container build is automatically tested on every push/pull request.
+
+Veja mais detalhes no `README.md`.
+
 ## Tools Installed
 
 - **Via APT**: git, curl, wget, zsh, stow

@@ -2,6 +2,28 @@
 
 Personal dotfiles configuration managed with GNU Stow and Mise. These dotfiles provide a modern and efficient development environment with focus on productivity, security, and ease of use.
 
+## 🚀 DevContainer & CI/CD
+
+Este repositório inclui um ambiente DevContainer pronto para uso e integração contínua (CI) via GitHub Actions.
+
+### Como usar o DevContainer
+
+1. Instale o [VS Code](https://code.visualstudio.com/) e a extensão [Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers).
+2. Clone o repositório:
+  ```bash
+  git clone https://github.com/carloskvasir/dotfiles.git
+  cd dotfiles
+  ```
+3. Abra no VS Code e selecione "Reabrir no Container" quando solicitado.
+4. Aguarde a configuração automática do ambiente.
+
+### CI/CD
+
+O build do DevContainer é testado automaticamente a cada push ou pull request via GitHub Actions.
+Workflow file: `.github/workflows/devcontainer.yml`
+
+---
+
 ## 🚀 Quick Start
 
 ### Option 1: DevContainer (Recommended)
