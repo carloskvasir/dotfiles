@@ -57,7 +57,7 @@ create_env_file() {
 
 # GitHub Configuration
 GITHUB_USERNAME=$github_user
-# GITHUB_TOKEN=your-personal-access-token-here
+# GITHUB_REGISTRY_TOKEN=your-personal-access-token-here
 
 # Repository Configuration  
 REPOSITORY_NAME=$REPO_NAME
@@ -87,7 +87,7 @@ EOF
     echo -e "${GREEN}✅ Created $env_file${NC}"
     echo ""
     echo -e "${YELLOW}⚠️  Important: Add your GitHub token to .env if needed${NC}"
-    echo "   GITHUB_TOKEN=your-personal-access-token"
+    echo "   GITHUB_REGISTRY_TOKEN=your-personal-access-token"
     echo ""
 }
 

@@ -15,17 +15,23 @@ echo -e "${BLUE}🚀 Manual Push to GitHub Container Registry${NC}"
 echo -e "${BLUE}==========================================${NC}"
 echo ""
 
-# Configuration - Dynamic user detection
-GITHUB_USERNAME="${GITHUB_USERNAME:-$(git config user.name || echo "$(whoami)")}"
-REPOSITORY_NAME="${REPOSITORY_NAME:-$(basename "$(git rev-parse --show-toplevel 2>/dev/null || echo "dotfiles")")}"
-REGISTRY="ghcr.io"
-
-# Auto-detect from git remote if available
-if git remote get-url origin &>/dev/null; then
-    REPO_URL=$(git remote get-url origin)
-    if [[ "$REPO_URL" =~ github\.com[:/]([^/]+)/([^/.]+) ]]; then
-        GITHUB_USERNAME="${BASH_REMATCH[1]}"
-        REPOSITORY_NAME="${BASH_REMATCH[2]}"
+# Configuration - Load environment variables
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ -f "$SCRIPT_DIR/load-env.sh" ]]; then
+    source "$SCRIPT_DIR/load-env.sh"
+else
+    # Fallback to manual detection
+    GITHUB_USERNAME="${GITHUB_USERNAME:-$(git config user.name || echo "$(whoami)")}"
+    REPOSITORY_NAME="${REPOSITORY_NAME:-$(basename "$(git rev-parse --show-toplevel 2>/dev/null || echo "dotfiles")")}"
+    REGISTRY="ghcr.io"
+    
+    # Auto-detect from git remote if available
+    if git remote get-url origin &>/dev/null; then
+        REPO_URL=$(git remote get-url origin)
+        if [[ "$REPO_URL" =~ github\.com[:/]([^/]+)/([^/.]+) ]]; then
+            GITHUB_USERNAME="${BASH_REMATCH[1]}"
+            REPOSITORY_NAME="${BASH_REMATCH[2]}"
+        fi
     fi
 fi
 
