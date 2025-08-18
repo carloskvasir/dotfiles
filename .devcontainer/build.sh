@@ -1,32 +1,35 @@
 #!/bin/bash
-# Optimized multi-stage Docker build script for dotfiles DevContainer
+# ZSH-optimized Docker build script for dotfiles DevContainer
 
 set -e
 
-echo "🐳 Building multi-stage DevContainer..."
+echo "🐳 Building ZSH-optimized DevContainer..."
 
 # Build arguments
 USERNAME=${USERNAME:-vscode}
 USER_UID=${USER_UID:-1000}
 USER_GID=${USER_GID:-$USER_UID}
 
-# Build with optimizations
+# Build with ZSH optimizations
 docker build \
     --build-arg USERNAME="$USERNAME" \
     --build-arg USER_UID="$USER_UID" \
     --build-arg USER_GID="$USER_GID" \
-    --target runtime \
-    --tag dotfiles-devcontainer:latest \
+    --tag dotfiles-devcontainer:zsh \
     --file .devcontainer/Dockerfile \
     .
 
-echo "✅ Multi-stage build completed!"
+echo "✅ ZSH-optimized build completed!"
 echo "📊 Image sizes:"
-docker images dotfiles-devcontainer:latest --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}"
+docker images dotfiles-devcontainer:zsh --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}"
 
 echo ""
 echo "🔍 Build cache info:"
 docker system df
 
 echo ""
-echo "💡 To run: docker run -it --rm dotfiles-devcontainer:latest zsh"
+echo "🧪 Testing zsh + mise integration:"
+docker run --rm dotfiles-devcontainer:zsh /home/vscode/test-zsh-mise.sh
+
+echo ""
+echo "💡 To run interactively: docker run -it --rm dotfiles-devcontainer:zsh"

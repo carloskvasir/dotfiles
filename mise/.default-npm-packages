@@ -11,26 +11,26 @@ nodemon                 # Auto-restart durante desenvolvimento
 npm-check-updates       # Atualizar dependências (ncu)
 
 # Linters e formatadores
-eslint                  # JavaScript/TypeScript linter
-prettier                # Code formatter
-stylelint               # CSS linter
+#eslint                  # JavaScript/TypeScript linter
+#prettier                # Code formatter
+#stylelint               # CSS linter
 
 # Ferramentas de build
-vite                    # Build tool moderno
-rollup                  # Module bundler
+#vite                    # Build tool moderno
+#rollup                  # Module bundler
 
 # CLI tools úteis
-serve                   # Static file server
-http-server             # Simple HTTP server
-json-server             # Mock REST API
-live-server             # Development server com live reload
+#serve                   # Static file server
+#http-server             # Simple HTTP server
+#json-server             # Mock REST API
+#live-server             # Development server com live reload
 
 # Package managers
-pnpm                    # Package manager rápido
+#pnpm                    # Package manager rápido
 
 # Framework CLIs
-create-react-app        # React project creator
-@angular/cli            # Angular CLI
-@vue/cli                # Vue CLI
-create-next-app         # Next.js project creator
+#create-react-app        # React project creator
+#@angular/cli            # Angular CLI
+#@vue/cli                # Vue CLI
+#create-next-app         # Next.js project creator
 

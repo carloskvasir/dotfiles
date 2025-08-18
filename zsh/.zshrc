@@ -527,14 +527,14 @@ eval "$(mise activate zsh)"
 # Modern CLI Tools Aliases (installed via mise)
 ##############################################################################
 
-# Modern replacements for traditional commands
-if command -v eza >/dev/null 2>&1; then
-    alias ls='eza --icons --group-directories-first'
-    alias ll='eza -l --icons --group-directories-first --time-style=relative'
-    alias la='eza -la --icons --group-directories-first --time-style=relative'
-    alias lt='eza --tree --level=2 --icons'
-    alias lta='eza --tree --level=3 --icons --all'
-fi
+# # Modern replacements for traditional commands
+# if command -v eza >/dev/null 2>&1; then
+#     alias ls='eza --icons --group-directories-first'
+#     alias ll='eza -l --icons --group-directories-first --time-style=relative'
+#     alias la='eza -la --icons --group-directories-first --time-style=relative'
+#     alias lt='eza --tree --level=2 --icons'
+#     alias lta='eza --tree --level=3 --icons --all'
+# fi
 
 if command -v bat >/dev/null 2>&1; then
     alias cat='bat --style=plain --paging=never'

@@ -1,73 +1,60 @@
 [tools]
-# === Linguagens de Programação ===
+# === Linguagens de Programação (essenciais) ===
 node = "22.16.0"            # Node.js para desenvolvimento web
 python = "3.12"             # Python para scripts e desenvolvimento
-ruby = "3"                  # Ruby para Rails
-go = "latest"               # Go para ferramentas modernas
-rust = "latest"             # Rust para performance
-java = "24"                 # Java para desenvolvimento enterprise
-lua = "latest"              # Lua para Neovim e scripts
+# rust = "1.89.0"           # Desabilitado temporariamente - compile pesado
+# go = "1.25.0"             # Desabilitado temporariamente
+# ruby = "3.4.5"            # Desabilitado temporariamente
+# lua = "latest"            # Desabilitado temporariamente
 
 # === Editores e IDEs ===
 neovim = "latest"           # Editor moderno
 
 # === Ferramentas de Build e Deploy ===
-terraform = "latest"        # Infrastructure as Code
-maven = "latest"            # Build tool para Java
 yarn = "latest"             # Package manager JS alternativo
-# just = "1.39"               # Command runner moderno
-# podman = "latest"           # Alternativa ao Docker
 
-# === Ferramentas de Linha de Comando ===
+# === Ferramentas de Linha de Comando (essenciais apenas) ===
 ripgrep = "latest"          # Busca em arquivos (rg)
 fzf = "latest"              # Fuzzy finder
-fd = "latest"               # Find moderno
-bat = "latest"              # Cat com syntax highlighting
-eza = "latest"              # ls moderno (substitui exa)
-delta = "latest"            # Git diff melhorado
-dust = "latest"             # du moderno
-bottom = "latest"           # htop moderno (btm)
-zoxide = "latest"           # cd inteligente (z)
-starship = "latest"         # Prompt moderno
-hyperfine = "latest"        # Benchmarking de comandos
-tokei = "latest"            # Contador de linhas de código
-git-cliff = "latest"        # Gerador de changelog
-# gh = "latest"               # GitHub CLI
-# glab = "latest"             # GitLab CLI
+# fd = "latest"             # REMOVIDO - causando rate limit
+# bat = "latest"            # REMOVIDO - não essencial para build inicial
+# eza = "latest"            # REMOVIDO - não essencial para build inicial
+# delta = "latest"          # REMOVIDO - não essencial para build inicial
+# gh = "latest"             # REMOVIDO - causando rate limit
 
 # === Git e Versionamento ===
 lazygit = "latest"          # Git TUI
 # git-delta = "latest"        # Git diff viewer
-pre-commit = "latest"       # Git hooks
+# pre-commit = "latest"       # Git hooks
 
 
 # === DevOps e Cloud ===
 # gcloud = "latest"           # Google Cloud CLI
-aws-cli = "latest"          # AWS CLI
+# aws-cli = "latest"          # AWS CLI
 # kubectl = "latest"          # Kubernetes CLI
 # helm = "latest"             # Kubernetes package manager
 # k9s = "latest"              # Kubernetes TUI
 
 # === Ferramentas de Sistema ===
-tmux = "latest"             # Terminal multiplexer
-jq = "latest"               # JSON processor
-yq = "latest"               # YAML processor
+# tmux = "latest"             # Terminal multiplexer
+# jq = "latest"               # JSON processor
+# yq = "latest"               # YAML processor
 
 # === Python específico ===
-uv = "latest"               # Package manager Python ultra-rápido
-poetry = "latest"           # Dependency management Python
-pipx = "latest"             # Install Python apps in isolated envs
+# uv = "latest"               # Package manager Python ultra-rápido
+# poetry = "latest"           # Dependency management Python
+# pipx = "latest"             # Install Python apps in isolated envs
 
 
 [settings]
 experimental = true         # Ativa recursos experimentais no Mise
 legacy_version_file = true  # Mantém a configuração moderna
-idiomatic_version_file_enable_tools = ["ruby", "node", "python"]
+idiomatic_version_file_enable_tools = ["node", "python"]  # Removido ruby (desabilitado)
 pin = true                  # Pin versions in .tool-versions files
-always_keep_download = true # Manter downloads para reinstalação rápida
-always_keep_install = true  # Manter instalações antigas por segurança
+always_keep_download = true  # Manter downloads para builds mais rápidos
+always_keep_install = false # Não manter instalações antigas para economizar espaço
 paranoid = false            # Não validar checksums (mais rápido)
-jobs = 4                    # Parallel jobs para instalação
+jobs = 2                    # Reduzir jobs paralelos para evitar rate limit
 
 # Aliases úteis para comandos longos
 [alias]
@@ -80,12 +67,12 @@ lsi = "list --installed"
 [env]
 MISE_PYTHON_DEFAULT_PACKAGES_FILE = "~/.default-python-packages"
 MISE_NODE_DEFAULT_PACKAGES_FILE = "~/.default-npm-packages"  
-MISE_RUBY_DEFAULT_GEMS_FILE = "~/.default-gems"
-# Acelerar compilação usando todos os cores
-MAKEFLAGS = "-j$(nproc)"
-# Otimizações de compilação
-CFLAGS = "-O3 -march=native"
-CXXFLAGS = "-O3 -march=native"
+# MISE_RUBY_DEFAULT_GEMS_FILE = "~/.default-gems"  # Comentado - Ruby desabilitado
+# Compilação otimizada para containers
+MAKEFLAGS = "-j2"           # Fixo em 2 jobs para estabilidade em containers
+# Otimizações de compilação conservadoras para compatibilidade
+CFLAGS = "-O2"
+CXXFLAGS = "-O2"
 
 # === Ferramentas instaladas via sistema (apt/snap) ===
 # Essas ferramentas NÃO devem ser gerenciadas pelo mise:

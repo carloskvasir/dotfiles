@@ -2,26 +2,26 @@
 # Ferramentas básicas já instaladas
 pipenv                  # Gerenciador de ambientes virtuais
 aider                   # AI coding assistant
-pynvim                  # Neovim Python support
+#pynvim                  # Neovim Python support
 virtualenv              # Ambientes virtuais
 
 # Ferramentas de desenvolvimento
-black                   # Formatador de código
-flake8                  # Linter
-mypy                    # Type checker
-pytest                  # Framework de testes
-ipython                 # REPL melhorado
-jupyter                 # Notebooks
-requests                # HTTP library essencial
-click                   # CLI framework
+#black                   # Formatador de código
+#flake8                  # Linter
+#mypy                    # Type checker
+#pytest                  # Framework de testes
+#ipython                 # REPL melhorado
+#jupyter                 # Notebooks
+#requests                # HTTP library essencial
+#click                   # CLI framework
 
 # Ferramentas de linha de comando
-httpie                  # HTTP client amigável
-tldr                    # Man pages simplificadas
-thefuck                 # Corretor de comandos
+#httpie                  # HTTP client amigável
+#tldr                    # Man pages simplificadas
+#thefuck                 # Corretor de comandos
 
 # Ferramentas de produtividade
-rich                    # Output colorido e tabelas
-typer                   # CLI framework moderno
-pre-commit              # Git hooks
+#rich                    # Output colorido e tabelas
+#typer                   # CLI framework moderno
+#pre-commit              # Git hooks
 

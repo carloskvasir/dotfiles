@@ -1,0 +1,90 @@
+{
+  "name": "Dotfiles ZSH Development Environment for Codespaces",
+  
+  // Opção 1: Build automático (mais lento na primeira vez)
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "devcontainer",
+  "workspaceFolder": "/workspaces/dotfiles",
+  
+  // Opção 2: Usar imagem pré-buildada (descomente para usar)
+  // "image": "ghcr.io/carloskvasir/dotfiles-devcontainer:latest",
+  
+  "mounts": [
+    "source=${localWorkspaceFolder},target=/workspaces/dotfiles,type=bind,consistency=cached"
+  ],
+  
+  // Configurações específicas para Codespaces
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "zsh",
+        "terminal.integrated.cwd": "/workspaces/dotfiles",
+        "mise.enableShellIntegration": true,
+        "terminal.integrated.env.linux": {
+          "SHELL": "/bin/zsh"
+        },
+        // Configurações específicas para Codespaces
+        "workbench.colorTheme": "GitHub Dark Default",
+        "editor.fontSize": 14,
+        "terminal.integrated.fontSize": 14
+      },
+      "extensions": [
+        "ms-vscode.vscode-json",
+        "redhat.vscode-yaml", 
+        "ms-python.python",
+        "bradlc.vscode-tailwindcss",
+        // Extensões úteis para Codespaces
+        "GitHub.copilot",
+        "GitHub.copilot-chat",
+        "ms-vscode.remote-repositories"
+      ]
+    },
+    "codespaces": {
+      "openFiles": [
+        "README.md",
+        ".devcontainer/devcontainer.json"
+      ]
+    }
+  },
+  
+  "features": {
+    // Use features do Codespaces quando possível
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "dockerComposeVersion": "v2"
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {
+      "installDirectlyFromGitHubRelease": true
+    }
+  },
+  
+  // Scripts otimizados para Codespaces
+  "postCreateCommand": [
+    "/bin/zsh", "-c", 
+    "chmod +x /workspaces/dotfiles/.devcontainer/test-zsh-mise.sh && /workspaces/dotfiles/.devcontainer/test-zsh-mise.sh"
+  ],
+  
+  "remoteUser": "vscode",
+  
+  // Configurações de performance para Codespaces
+  "initializeCommand": "echo 'Initializing Codespace with ZSH DevContainer...'",
+  "onCreateCommand": "echo 'Codespace ZSH DevContainer created successfully!'",
+  "updateContentCommand": "echo 'Updating mise tools...' && /bin/zsh -c 'source ~/.zshrc && mise upgrade'",
+  
+  // Resource limits otimizados para Codespaces
+  "hostRequirements": {
+    "memory": "4gb",
+    "storage": "32gb",
+    "cpus": 2
+  },
+  
+  // Port forwarding para desenvolvimento
+  "forwardPorts": [3000, 8000, 8080, 5000],
+  "portsAttributes": {
+    "3000": {
+      "label": "Frontend Dev Server"
+    },
+    "8000": {
+      "label": "Backend Dev Server"
+    }
+  }
+}

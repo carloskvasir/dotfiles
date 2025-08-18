@@ -1,7 +1,7 @@
 {
-  "name": "Dotfiles Multi-Stage Environment",
+  "name": "Dotfiles ZSH Development Environment",
   
-  // Use Docker Compose for better performance and caching
+  // Use Docker Compose for production setup
   "dockerComposeFile": "docker-compose.yml",
   "service": "devcontainer",
   "workspaceFolder": "/workspaces/dotfiles",
@@ -15,7 +15,10 @@
       "settings": {
         "terminal.integrated.defaultProfile.linux": "zsh",
         "terminal.integrated.cwd": "/workspaces/dotfiles",
-        "mise.enableShellIntegration": true
+        "mise.enableShellIntegration": true,
+        "terminal.integrated.env.linux": {
+          "SHELL": "/bin/zsh"
+        }
       },
       "extensions": [
         "ms-vscode.vscode-json",
@@ -27,27 +30,27 @@
   },
   
   "features": {
-    // Use features for additional tools instead of Dockerfile when possible
+    // Use features for additional tools when needed
     "ghcr.io/devcontainers/features/docker-in-docker:2": {
       "dockerComposeVersion": "v2"
     }
   },
   
   "postCreateCommand": [
-    "bash", "-c", 
-    "chmod +x /workspaces/dotfiles/.devcontainer/setup.sh && /workspaces/dotfiles/.devcontainer/setup.sh"
+    "/bin/zsh", "-c", 
+    "chmod +x /workspaces/dotfiles/.devcontainer/test-zsh-mise.sh && /workspaces/dotfiles/.devcontainer/test-zsh-mise.sh"
   ],
   
   "remoteUser": "vscode",
   
-  // Performance optimizations
-  "initializeCommand": "echo 'Initializing multi-stage DevContainer...'",
-  "onCreateCommand": "echo 'Container created successfully!'",
-  "updateContentCommand": "echo 'Updating content...'",
+  // Performance and resource optimization
+  "initializeCommand": "echo 'Initializing ZSH DevContainer...'",
+  "onCreateCommand": "echo 'ZSH DevContainer created successfully!'",
+  "updateContentCommand": "echo 'Updating mise tools...' && /bin/zsh -c 'source ~/.zshrc && mise upgrade'",
   
-  // Resource limits
+  // Resource limits for production use
   "hostRequirements": {
-    "memory": "2gb",
-    "storage": "8gb"
+    "memory": "4gb",
+    "storage": "10gb"
   }
 }

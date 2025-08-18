@@ -1,0 +1,75 @@
+# Git and build artifacts
+.git/
+.gitignore
+.gitmodules
+
+# SSH sockets and keys (problematic for Docker builds)
+ssh/.ssh/sockets/
+ssh/.ssh/*.key
+ssh/.ssh/id_*
+ssh/.ssh/known_hosts
+
+# Temporary and cache files
+.cache/
+.tmp/
+*.tmp
+*.log
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE and editor files
+.vscode/
+.idea/
+*.sublime-*
+
+# Docker files (avoid recursion)
+Dockerfile.*
+docker-compose*.yml
+.dockerignore
+
+# Build outputs
+dist/
+build/
+out/
+
+# Node modules (will be installed fresh)
+node_modules/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+
+# Documentation and README (not needed in container)
+*.md
+docs/
+
+# CI/CD files (not needed in container)
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# Personal configs that shouldn't go in container
+.env
+.env.local
+.env.*.local
+
+# Large or unnecessary files
+*.iso
+*.dmg
+*.pkg
+*.deb
+*.rpm

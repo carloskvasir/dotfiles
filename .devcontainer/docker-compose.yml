@@ -5,15 +5,10 @@ services:
     build:
       context: ..
       dockerfile: .devcontainer/Dockerfile
-      target: runtime
       args:
         USERNAME: vscode
         USER_UID: 1000
         USER_GID: 1000
-      cache_from:
-        - dotfiles-devcontainer:latest
-        - dotfiles-devcontainer:base-deps
-        - dotfiles-devcontainer:tools-cache
     
     volumes:
       # Mount workspace
@@ -22,33 +17,38 @@ services:
       # Persistent volumes for better performance
       - vscode-server:/home/vscode/.vscode-server
       - mise-cache:/home/vscode/.cache/mise
+      - mise-data:/home/vscode/.local/share/mise
       - node-modules-cache:/home/vscode/.cache/npm
       - python-cache:/home/vscode/.cache/pip
+      - gem-cache:/home/vscode/.cache/gem
     
     environment:
-      - MISE_DATA_DIR=/home/vscode/.local/share/mise
+      # ZSH-optimized environment
       - SHELL=/bin/zsh
+      - PATH=/home/vscode/.local/bin:/home/vscode/.local/share/mise/shims:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+      - MISE_DATA_DIR=/home/vscode/.local/share/mise
+      - MISE_CONFIG_DIR=/home/vscode/.config/mise
+      - LANG=C.UTF-8
+      - LC_ALL=C.UTF-8
+      # ZSH specific
+      - ZDOTDIR=/home/vscode
     
     user: vscode
     working_dir: /workspaces/dotfiles
     
-    # Keep container running
-    command: sleep infinity
-    
-    # Better resource limits
-    deploy:
-      resources:
-        limits:
-          memory: 2G
-        reservations:
-          memory: 512M
+    # Use zsh as default command
+    command: ["/bin/zsh", "-c", "while true; do sleep 30; done"]
 
 volumes:
   vscode-server:
     name: dotfiles-vscode-server
   mise-cache:
     name: dotfiles-mise-cache
+  mise-data:
+    name: dotfiles-mise-data
   node-modules-cache:
     name: dotfiles-node-cache
   python-cache:
     name: dotfiles-python-cache
+  gem-cache:
+    name: dotfiles-gem-cache
