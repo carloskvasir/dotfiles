@@ -1,0 +1,285 @@
+{
+  "name": "Advanced Dotfiles Development Environment"
+  
+  "dockerComposeFile": "docker-compose.optimized.yml",
+  "service": "devcontainer",
+  "workspaceFolder": "/workspaces/dotfiles",
+  
+  // ====================================================================
+  // MOUNTS OTIMIZADOS PARA PERFORMANCE
+  // ====================================================================
+  
+  "mounts": [
+    // Workspace principal com cache otimizado
+    "source=${localWorkspaceFolder},target=/workspaces/dotfiles,type=bind,consistency=cached",
+    
+    // Cache mounts para melhor performance
+    "source=devcontainer-vscode-server,target=/home/vscode/.vscode-server,type=volume",
+    "source=devcontainer-extensions,target=/home/vscode/.vscode-server/extensions,type=volume",
+    
+    // SSH keys para desenvolvimento (opcional)
+    "source=${localEnv:HOME}/.ssh,target=/home/vscode/.ssh,type=bind,consistency=cached,readonly"
+  ],
+  
+  // ====================================================================
+  // CUSTOMIZAÇÕES AVANÇADAS DO VS CODE
+  // ====================================================================
+  
+  "customizations": {
+    "vscode": {
+      "settings": {
+        // === Terminal Configuration ===
+        "terminal.integrated.defaultProfile.linux": "zsh",
+        "terminal.integrated.cwd": "/workspaces/dotfiles",
+        "terminal.integrated.env.linux": {
+          "SHELL": "/bin/zsh",
+          "ZDOTDIR": "/home/vscode",
+          "MISE_DATA_DIR": "/home/vscode/.local/share/mise",
+          "MISE_CONFIG_DIR": "/home/vscode/.config/mise"
+        },
+        "terminal.integrated.fontSize": 14,
+        "terminal.integrated.fontFamily": "JetBrains Mono, 'Courier New', monospace",
+        
+        // === Editor Configuration ===
+        "editor.fontFamily": "JetBrains Mono, 'Courier New', monospace",
+        "editor.fontSize": 14,
+        "editor.lineHeight": 1.5,
+        "editor.minimap.enabled": false,
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+          "source.fixAll": true,
+          "source.organizeImports": true
+        },
+        
+        // === File Explorer ===
+        "explorer.compactFolders": false,
+        "explorer.confirmDelete": false,
+        "explorer.confirmDragAndDrop": false,
+        
+        // === Git Configuration ===
+        "git.enableSmartCommit": true,
+        "git.confirmSync": false,
+        "git.autofetch": true,
+        
+        // === Language Specific ===
+        
+        // Python
+        "python.defaultInterpreterPath": "/home/vscode/.local/share/mise/shims/python",
+        "python.formatting.provider": "black",
+        "python.linting.enabled": true,
+        "python.linting.pylintEnabled": true,
+        
+        // JavaScript/TypeScript
+        "typescript.preferences.importModuleSpecifier": "relative",
+        "javascript.preferences.importModuleSpecifier": "relative",
+        
+        // JSON
+        "json.format.keepLines": true,
+        
+        // YAML
+        "yaml.format.bracketSpacing": true,
+        "yaml.format.singleQuote": true,
+        
+        // === Mise Integration ===
+        "mise.enableShellIntegration": true,
+        
+        // === Performance Settings ===
+        "search.useIgnoreFiles": true,
+        "search.useGlobalIgnoreFiles": true,
+        "files.watcherExclude": {
+          "**/.git/**": true,
+          "**/node_modules/**": true,
+          "**/.mise/**": true,
+          "**/.cache/**": true
+        },
+        
+        // === Theme & Appearance ===
+        "workbench.colorTheme": "One Dark Pro",
+        "workbench.iconTheme": "material-icon-theme",
+        "workbench.sideBar.location": "left",
+        "workbench.panel.defaultLocation": "bottom",
+        
+        // === Security ===
+        "security.workspace.trust.enabled": false
+      },
+      
+      // === EXTENSÕES ESSENCIAIS ===
+      "extensions": [
+        // === Core Development ===
+        "ms-vscode.vscode-json",
+        "redhat.vscode-yaml",
+        "ms-vscode.vscode-typescript-next",
+        
+        // === Python Stack ===
+        "ms-python.python",
+        "ms-python.pylint",
+        "ms-python.black-formatter",
+        "ms-python.isort",
+        
+        // === JavaScript/TypeScript Stack ===
+        "esbenp.prettier-vscode",
+        "bradlc.vscode-tailwindcss",
+        "ms-vscode.vscode-eslint",
+        
+        // === Git & Version Control ===
+        "eamodio.gitlens",
+        "mhutchie.git-graph",
+        "github.vscode-pull-request-github",
+        
+        // === Docker & DevOps ===
+        "ms-vscode-remote.remote-containers",
+        "ms-azuretools.vscode-docker",
+        
+        // === Productivity ===
+        "gruntfuggly.todo-tree",
+        "aaron-bond.better-comments",
+        "oderwat.indent-rainbow",
+        "streetsidesoftware.code-spell-checker",
+        
+        // === Theme & Icons ===
+        "zhuangtongfa.material-theme",
+        "pkief.material-icon-theme",
+        
+        // === File Formats ===
+        "dotenv.dotenv-vscode",
+        "ms-vscode.makefile-tools",
+        
+        // === Performance Monitoring ===
+        "ms-vscode.vscode-json"
+      ]
+    }
+  },
+  
+  // ====================================================================
+  // FEATURES AVANÇADAS
+  // ====================================================================
+  
+  "features": {
+    // Docker-in-Docker com otimizações
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "dockerComposeVersion": "v2",
+      "version": "latest",
+      "moby": false,
+      "azureDnsAutoDetection": false,
+      "installDockerBuildx": true
+    },
+    
+    // GitHub CLI para DevOps workflows
+    "ghcr.io/devcontainers/features/github-cli:1": {
+      "installDirectlyFromGitHubRelease": true,
+      "version": "latest"
+    },
+    
+    // SSH para desenvolvimento seguro
+    "ghcr.io/devcontainers/features/sshd:1": {
+      "version": "latest"
+    }
+  },
+  
+  // ====================================================================
+  // LIFECYCLE COMMANDS OTIMIZADOS
+  // ====================================================================
+  
+  // Comando inicial (executado uma vez)
+  "initializeCommand": [
+    "/bin/bash", "-c", 
+    "echo '🚀 Inicializando DevContainer Avançado...' && echo 'Build ID: $(date +%Y%m%d_%H%M%S)'"
+  ],
+  
+  // Comando de criação (após build do container)
+  "onCreateCommand": [
+    "/bin/zsh", "-c",
+    "echo '🔧 Configurando ambiente...' && ~/.local/bin/mise doctor || echo 'Mise não disponível ainda'"
+  ],
+  
+  // Comando pós-criação (ambiente pronto)
+  "postCreateCommand": [
+    "/bin/zsh", "-c",
+    "echo '✅ Finalizando setup...' && chmod +x /workspaces/dotfiles/.devcontainer/test-zsh-mise.sh && /workspaces/dotfiles/.devcontainer/test-zsh-mise.sh"
+  ],
+  
+  // Comando de atualização (mudanças no devcontainer)
+  "updateContentCommand": [
+    "/bin/zsh", "-c",
+    "echo '🔄 Atualizando ferramentas...' && source ~/.zshrc && mise upgrade --yes || echo 'Mise upgrade com warnings'"
+  ],
+  
+  // ====================================================================
+  // CONFIGURAÇÕES DE USUÁRIO E SEGURANÇA
+  // ====================================================================
+  
+  "remoteUser": "vscode",
+  "remoteEnv": {
+    "PATH": "/home/vscode/.local/bin:/home/vscode/.local/share/mise/shims:${containerEnv:PATH}",
+    "SHELL": "/bin/zsh",
+    "MISE_DATA_DIR": "/home/vscode/.local/share/mise",
+    "MISE_CONFIG_DIR": "/home/vscode/.config/mise",
+    "COLORTERM": "truecolor",
+    "TERM": "xterm-256color"
+  },
+  
+  // ====================================================================
+  // REQUISITOS DE RECURSOS E PERFORMANCE
+  // ====================================================================
+  
+  "hostRequirements": {
+    "memory": "6gb",     // Aumentado para melhor performance
+    "storage": "15gb",   // Aumentado para cache e tools
+    "cpus": 2           // Mínimo para build paralelo
+  },
+  
+  // ====================================================================
+  // CONFIGURAÇÕES AVANÇADAS
+  // ====================================================================
+  
+  // Timeout estendido para builds complexos
+  "containerEnvFile": ".devcontainer/.env",
+  "shutdownAction": "stopCompose",
+  
+  // ====================================================================
+  // PORTS E FORWARDING
+  // ====================================================================
+  
+  "forwardPorts": [
+    3000,   // Next.js dev server
+    8080,   // HTTP development server
+    8000,   // Python dev server
+    5000,   // Flask dev server
+    4000    // Jekyll/Hugo dev server
+  ],
+  
+  "portsAttributes": {
+    "3000": {
+      "label": "Next.js Dev Server",
+      "onAutoForward": "notify"
+    },
+    "8080": {
+      "label": "HTTP Dev Server",
+      "onAutoForward": "silent"
+    },
+    "8000": {
+      "label": "Python Dev Server", 
+      "onAutoForward": "notify"
+    }
+  },
+  
+  // ====================================================================
+  // METADADOS E DOCUMENTAÇÃO
+  // ====================================================================
+  
+  "capAdd": [
+    "SYS_PTRACE"  // Para debugging
+  ],
+  
+  "securityOpt": [
+    "seccomp:unconfined"  // Para ferramentas de desenvolvimento
+  ],
+  
+  // Override command para desenvolvimento
+  "overrideCommand": false,
+  
+  // Configurações de post-attach
+  "postAttachCommand": {
+    "server": "echo '🎉 DevContainer pronto para desenvolvimento!' && echo 'Mise status:' && ~/.local/bin/mise list --installed 2>/dev/null || echo 'Execute: mise install para instalar ferramentas'"
+  }
+}

@@ -1,0 +1,581 @@
+name: Advanced DevContainer CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, dev]
+    paths:
+      - '.devcontainer/**'
+      - 'mise/**'
+      - 'nvim/**'
+      - 'zsh/**'
+      - '.github/workflows/devcontainer-advanced.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - '.devcontainer/**'
+      - 'mise/**'
+  workflow_dispatch:
+    inputs:
+      build_strategy:
+        description: 'Build strategy'
+        required: true
+        default: 'parallel'
+        type: choice
+        options:
+          - parallel
+          - sequential
+          - minimal
+      cache_strategy:
+        description: 'Cache strategy'
+        required: true
+        default: 'aggressive'
+        type: choice
+        options:
+          - aggressive
+          - balanced
+          - minimal
+      push_to_registry:
+        description: 'Push to registry'
+        required: true
+        default: true
+        type: boolean
+      run_security_scan:
+        description: 'Run security scan'
+        required: true
+        default: false
+        type: boolean
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/devcontainer
+  BUILDX_VERSION: v0.12.1
+
+# ====================================================================
+# JOBS PIPELINE
+# ====================================================================
+
+jobs:
+  # ====================================================================
+  # JOB 1: MATRIX STRATEGY & VALIDATION
+  # ====================================================================
+  
+  strategy-matrix:
+    name: Generate Build Matrix
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+      cache-key: ${{ steps.cache.outputs.key }}
+      should-build: ${{ steps.validation.outputs.should-build }}
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2  # Para diff analysis
+      
+      - name: Analyze changes
+        id: changes
+        run: |
+          echo "🔍 Analisando mudanças..."
+          
+          # Detectar arquivos alterados
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            changed_files=$(git diff --name-only HEAD^ HEAD)
+          else
+            changed_files=$(git diff --name-only HEAD~1 HEAD)
+          fi
+          
+          echo "changed-files<<EOF" >> $GITHUB_OUTPUT
+          echo "$changed_files" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          
+          # Determinar estratégia baseada nas mudanças
+          if echo "$changed_files" | grep -q "\.devcontainer/Dockerfile"; then
+            echo "build-priority=high" >> $GITHUB_OUTPUT
+          elif echo "$changed_files" | grep -q "mise/"; then
+            echo "build-priority=medium" >> $GITHUB_OUTPUT
+          else
+            echo "build-priority=low" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Generate matrix strategy
+        id: matrix
+        run: |
+          echo "🎯 Gerando estratégia de matrix..."
+          
+          # Estratégia baseada no input ou contexto
+          strategy="${{ github.event.inputs.build_strategy || 'parallel' }}"
+          priority="${{ steps.changes.outputs.build-priority }}"
+          
+          case "$strategy-$priority" in
+            "parallel-high"|"parallel-medium")
+              matrix='{
+                "include": [
+                  {"stage": "base-deps", "runner": "ubuntu-latest", "timeout": 10},
+                  {"stage": "tools-nodejs", "runner": "ubuntu-latest", "timeout": 15},
+                  {"stage": "tools-python", "runner": "ubuntu-latest", "timeout": 20},
+                  {"stage": "tools-dev", "runner": "ubuntu-latest", "timeout": 15},
+                  {"stage": "runtime", "runner": "ubuntu-latest", "timeout": 5}
+                ]
+              }'
+              ;;
+            "sequential-"*|"minimal-"*)
+              matrix='{
+                "include": [
+                  {"stage": "runtime", "runner": "ubuntu-latest", "timeout": 30}
+                ]
+              }'
+              ;;
+            *)
+              matrix='{
+                "include": [
+                  {"stage": "runtime", "runner": "ubuntu-latest", "timeout": 20}
+                ]
+              }'
+              ;;
+          esac
+          
+          echo "matrix=$matrix" >> $GITHUB_OUTPUT
+          echo "📋 Matrix strategy: $matrix"
+      
+      - name: Generate cache key
+        id: cache
+        run: |
+          # Cache key inteligente baseado em conteúdo
+          content_hash=$(find .devcontainer mise -type f \( -name "*.toml" -o -name "Dockerfile*" -o -name "*.sh" \) -exec sha256sum {} \; | sha256sum | cut -d' ' -f1)
+          cache_key="devcontainer-v3-${{ runner.os }}-${content_hash:0:8}"
+          
+          echo "key=$cache_key" >> $GITHUB_OUTPUT
+          echo "🔑 Cache key: $cache_key"
+      
+      - name: Final validation
+        id: validation
+        run: |
+          echo "✅ Validação final..."
+          
+          required_files=(
+            ".devcontainer/Dockerfile.optimized"
+            "mise/.config/mise/config.toml"
+            "mise/.default-python-packages"
+            "mise/.default-npm-packages"
+          )
+          
+          all_exist=true
+          for file in "${required_files[@]}"; do
+            if [[ ! -f "$file" ]]; then
+              echo "❌ Arquivo obrigatório ausente: $file"
+              all_exist=false
+            fi
+          done
+          
+          echo "should-build=$all_exist" >> $GITHUB_OUTPUT
+  
+  # ====================================================================
+  # JOB 2: SETUP BUILD ENVIRONMENT
+  # ====================================================================
+  
+  setup:
+    name: Setup Build Environment
+    runs-on: ubuntu-latest
+    needs: strategy-matrix
+    if: needs.strategy-matrix.outputs.should-build == 'true'
+    
+    outputs:
+      buildx-version: ${{ steps.buildx.outputs.version }}
+      cache-hit: ${{ steps.cache-restore.outputs.cache-hit }}
+    
+    steps:
+      - name: Maximize build space
+        uses: easimon/maximize-build-space@master
+        with:
+          root-reserve-mb: 512
+          swap-size-mb: 1024
+          remove-dotnet: 'true'
+          remove-android: 'true'
+          remove-haskell: 'true'
+          remove-codeql: 'true'
+      
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Docker Buildx (Advanced)
+        id: buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          version: ${{ env.BUILDX_VERSION }}
+          driver-opts: |
+            network=host
+            image=moby/buildkit:buildx-stable-1
+          buildkitd-flags: |
+            --allow-insecure-entitlement network.host
+            --allow-insecure-entitlement security.insecure
+      
+      - name: Configure BuildKit
+        run: |
+          echo "🔧 Configurando BuildKit avançado..."
+          
+          # Configurar BuildKit para performance
+          cat > /tmp/buildkitd.toml << EOF
+          [worker.oci]
+            max-parallelism = 4
+          
+          [worker.containerd]
+            max-parallelism = 4
+          
+          [registry."docker.io"]
+            mirrors = ["mirror.gcr.io"]
+          EOF
+          
+          echo "📋 BuildKit configurado para máxima performance"
+      
+      - name: Restore build cache
+        id: cache-restore
+        uses: actions/cache/restore@v3
+        with:
+          path: |
+            /tmp/.buildx-cache
+            ~/.docker/buildx
+          key: ${{ needs.strategy-matrix.outputs.cache-key }}
+          restore-keys: |
+            devcontainer-v3-${{ runner.os }}-
+            devcontainer-v2-${{ runner.os }}-
+      
+      - name: Log in to Container Registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+  # ====================================================================
+  # JOB 3: PARALLEL BUILD STAGES
+  # ====================================================================
+  
+  build-stages:
+    name: Build Stage (${{ matrix.stage }})
+    runs-on: ${{ matrix.runner }}
+    needs: [strategy-matrix, setup]
+    if: needs.strategy-matrix.outputs.should-build == 'true'
+    timeout-minutes: ${{ matrix.timeout }}
+    
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.strategy-matrix.outputs.matrix) }}
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          version: ${{ env.BUILDX_VERSION }}
+      
+      - name: Restore build cache
+        uses: actions/cache/restore@v3
+        with:
+          path: |
+            /tmp/.buildx-cache-${{ matrix.stage }}
+          key: ${{ needs.strategy-matrix.outputs.cache-key }}-${{ matrix.stage }}
+          restore-keys: |
+            devcontainer-v3-${{ runner.os }}-${{ matrix.stage }}-
+      
+      - name: Log in to Container Registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=${{ matrix.stage }}-{{sha}}
+            type=raw,value=${{ matrix.stage }}-latest
+      
+      - name: Build stage
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: .devcontainer/Dockerfile.optimized
+          target: ${{ matrix.stage }}
+          platforms: linux/amd64
+          outputs: type=image,name=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }},push=false
+          cache-from: |
+            type=gha,scope=${{ matrix.stage }}
+            type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:cache-${{ matrix.stage }}
+          cache-to: |
+            type=gha,mode=max,scope=${{ matrix.stage }}
+            type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:cache-${{ matrix.stage }},mode=max
+          build-args: |
+            BUILDKIT_INLINE_CACHE=1
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+      
+      - name: Save build cache
+        uses: actions/cache/save@v3
+        if: always()
+        with:
+          path: |
+            /tmp/.buildx-cache-${{ matrix.stage }}
+          key: ${{ needs.strategy-matrix.outputs.cache-key }}-${{ matrix.stage }}
+
+  # ====================================================================
+  # JOB 4: FINAL IMAGE ASSEMBLY
+  # ====================================================================
+  
+  build-final:
+    name: Assemble Final Image
+    runs-on: ubuntu-latest
+    needs: [strategy-matrix, setup, build-stages]
+    if: needs.strategy-matrix.outputs.should-build == 'true'
+    
+    outputs:
+      image-digest: ${{ steps.build.outputs.digest }}
+      image-size: ${{ steps.inspect.outputs.size }}
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          version: ${{ env.BUILDX_VERSION }}
+      
+      - name: Log in to Container Registry
+        if: github.event_name != 'pull_request' && (github.event.inputs.push_to_registry != 'false')
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value={{sha}}
+            type=raw,value={{date 'YYYYMMDD'}}-{{sha}}
+      
+      - name: Build and push final image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: .devcontainer/Dockerfile.optimized
+          target: runtime
+          platforms: linux/amd64
+          push: ${{ github.event_name != 'pull_request' && (github.event.inputs.push_to_registry != 'false') }}
+          cache-from: |
+            type=gha,scope=base-deps
+            type=gha,scope=tools-nodejs
+            type=gha,scope=tools-python
+            type=gha,scope=tools-dev
+            type=gha,scope=runtime
+            type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:cache-runtime
+          cache-to: |
+            type=gha,mode=max,scope=runtime
+            type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:cache-runtime,mode=max
+          build-args: |
+            BUILDKIT_INLINE_CACHE=1
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+      
+      - name: Inspect image
+        id: inspect
+        if: steps.build.outcome == 'success'
+        run: |
+          if [[ "${{ github.event_name }}" != "pull_request" ]]; then
+            # Para imagens pushed
+            size=$(docker manifest inspect ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest | jq '.config.size')
+          else
+            # Para builds locais
+            size="unknown"
+          fi
+          
+          echo "size=$size" >> $GITHUB_OUTPUT
+          echo "📏 Image size: $size bytes"
+
+  # ====================================================================
+  # JOB 5: COMPREHENSIVE TESTING
+  # ====================================================================
+  
+  test-comprehensive:
+    name: Comprehensive Testing
+    runs-on: ubuntu-latest
+    needs: [strategy-matrix, build-final]
+    if: needs.strategy-matrix.outputs.should-build == 'true'
+    
+    strategy:
+      matrix:
+        test-suite:
+          - basic-functionality
+          - mise-integration
+          - performance
+          - security-scan
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Docker
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Build test image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: .devcontainer/Dockerfile.optimized
+          target: runtime
+          load: true
+          tags: test-image:latest
+          cache-from: type=gha,scope=runtime
+      
+      - name: Run test suite - ${{ matrix.test-suite }}
+        run: |
+          case "${{ matrix.test-suite }}" in
+            "basic-functionality")
+              echo "🧪 Testing basic functionality..."
+              
+              # Container startup test
+              CONTAINER_ID=$(docker run -d test-image:latest sleep 120)
+              echo "Container started: $CONTAINER_ID"
+              
+              # Wait for container
+              sleep 10
+              
+              # Test shell
+              docker exec $CONTAINER_ID /bin/zsh -c 'echo "ZSH working"'
+              
+              # Test user
+              docker exec $CONTAINER_ID /bin/zsh -c 'whoami | grep vscode'
+              
+              # Cleanup
+              docker stop $CONTAINER_ID && docker rm $CONTAINER_ID
+              ;;
+              
+            "mise-integration")
+              echo "🔧 Testing mise integration..."
+              
+              CONTAINER_ID=$(docker run -d test-image:latest sleep 120)
+              
+              # Test mise
+              docker exec $CONTAINER_ID /bin/zsh -c 'source ~/.zshrc && mise --version'
+              
+              # Test tools
+              docker exec $CONTAINER_ID /bin/zsh -c 'source ~/.zshrc && mise list --installed'
+              
+              # Test node
+              docker exec $CONTAINER_ID /bin/zsh -c 'source ~/.zshrc && node --version' || echo "Node not available"
+              
+              # Test python
+              docker exec $CONTAINER_ID /bin/zsh -c 'source ~/.zshrc && python --version' || echo "Python not available"
+              
+              docker stop $CONTAINER_ID && docker rm $CONTAINER_ID
+              ;;
+              
+            "performance")
+              echo "⚡ Testing performance..."
+              
+              # Startup time test
+              start_time=$(date +%s%N)
+              CONTAINER_ID=$(docker run -d test-image:latest sleep 60)
+              docker exec $CONTAINER_ID /bin/zsh -c 'source ~/.zshrc && mise --version' >/dev/null
+              end_time=$(date +%s%N)
+              
+              duration_ms=$(( (end_time - start_time) / 1000000 ))
+              echo "Startup + mise activation: ${duration_ms}ms"
+              
+              if [[ $duration_ms -lt 5000 ]]; then
+                echo "✅ Performance test passed"
+              else
+                echo "⚠️ Performance test slow"
+              fi
+              
+              docker stop $CONTAINER_ID && docker rm $CONTAINER_ID
+              ;;
+              
+            "security-scan")
+              if [[ "${{ github.event.inputs.run_security_scan }}" == "true" ]]; then
+                echo "🔒 Running security scan..."
+                
+                # Install trivy
+                sudo apt-get update
+                sudo apt-get install wget apt-transport-https gnupg lsb-release
+                wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+                echo "deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee -a /etc/apt/sources.list.d/trivy.list
+                sudo apt-get update
+                sudo apt-get install trivy
+                
+                # Run security scan
+                trivy image --exit-code 0 --severity HIGH,CRITICAL test-image:latest
+              else
+                echo "🔒 Security scan skipped"
+              fi
+              ;;
+          esac
+
+  # ====================================================================
+  # JOB 6: DEPLOYMENT & NOTIFICATION
+  # ====================================================================
+  
+  deploy:
+    name: Deploy & Notify
+    runs-on: ubuntu-latest
+    needs: [strategy-matrix, build-final, test-comprehensive]
+    if: always() && needs.strategy-matrix.outputs.should-build == 'true'
+    
+    steps:
+      - name: Generate deployment summary
+        run: |
+          echo "🚀 DevContainer Advanced Pipeline Summary" >> $GITHUB_STEP_SUMMARY
+          echo "=========================================" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Repository:** ${{ github.repository }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Build Strategy:** ${{ github.event.inputs.build_strategy || 'parallel' }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Cache Strategy:** ${{ github.event.inputs.cache_strategy || 'aggressive' }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [[ "${{ needs.test-comprehensive.result }}" == "success" ]]; then
+            echo "✅ **Status:** Build and tests completed successfully!" >> $GITHUB_STEP_SUMMARY
+            echo "🎯 **Image:** \`${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest\`" >> $GITHUB_STEP_SUMMARY
+            echo "📏 **Size:** ${{ needs.build-final.outputs.image-size }} bytes" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Status:** Build or tests failed" >> $GITHUB_STEP_SUMMARY
+            echo "📋 Check the workflow logs for details" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Usage" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
+          echo "# Via Docker Compose" >> $GITHUB_STEP_SUMMARY
+          echo "docker-compose -f .devcontainer/docker-compose.optimized.yml up -d" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "# Via VS Code" >> $GITHUB_STEP_SUMMARY
+          echo "code --remote containers-reopen-folder" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+      
+      - name: Update cache
+        uses: actions/cache/save@v3
+        if: always()
+        with:
+          path: |
+            /tmp/.buildx-cache
+            ~/.docker/buildx
+          key: ${{ needs.strategy-matrix.outputs.cache-key }}

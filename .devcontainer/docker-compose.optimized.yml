@@ -1,0 +1,251 @@
+version: '3.8'
+
+# ================================
+# DevContainer com Otimizações DevOps Avançadas
+# ================================
+
+services:
+  devcontainer:
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile.optimized
+      target: runtime
+      args:
+        USERNAME: vscode
+        USER_UID: 1000
+        USER_GID: 1000
+        BUILDKIT_INLINE_CACHE: 1
+      # Cache BuildKit avançado
+      cache_from:
+        - ghcr.io/carloskvasir/dotfiles/devcontainer:cache-base-deps
+        - ghcr.io/carloskvasir/dotfiles/devcontainer:cache-tools
+        - ghcr.io/carloskvasir/dotfiles/devcontainer:latest
+      # Build paralelo
+      x-bake:
+        platforms:
+          - linux/amd64
+    
+    # ================================
+    # Performance Tuning
+    # ================================
+    
+    # CPU/Memory otimizado para desenvolvimento
+    deploy:
+      resources:
+        limits:
+          cpus: '4.0'
+          memory: 8G
+        reservations:
+          cpus: '2.0'
+          memory: 4G
+    
+    # Shared memory otimizado para IDEs
+    shm_size: 2gb
+    
+    # ================================
+    # Volume Strategy Avançada
+    # ================================
+    volumes:
+      # Workspace com cache strategy
+      - type: bind
+        source: ..
+        target: /workspaces/dotfiles
+        bind:
+          propagation: cached
+      
+      # === Cache Persistente de Sistema ===
+      - type: volume
+        source: vscode-server-cache
+        target: /home/vscode/.vscode-server
+        volume:
+          labels:
+            purpose: "vscode-server-persistent"
+      
+      # === Cache de Tools por Tipo ===
+      - type: volume
+        source: mise-cache
+        target: /home/vscode/.cache/mise
+        volume:
+          labels:
+            purpose: "mise-downloads-cache"
+      
+      - type: volume
+        source: mise-data
+        target: /home/vscode/.local/share/mise
+        volume:
+          labels:
+            purpose: "mise-tools-persistent"
+      
+      # === Cache de Package Managers ===
+      - type: volume
+        source: npm-cache
+        target: /home/vscode/.cache/npm
+        volume:
+          labels:
+            purpose: "npm-cache"
+      
+      - type: volume
+        source: pip-cache
+        target: /home/vscode/.cache/pip
+        volume:
+          labels:
+            purpose: "python-pip-cache"
+      
+      - type: volume
+        source: cargo-cache
+        target: /home/vscode/.cargo
+        volume:
+          labels:
+            purpose: "rust-cargo-cache"
+      
+      # === Cache de Compilação ===
+      - type: volume
+        source: ccache
+        target: /home/vscode/.ccache
+        volume:
+          labels:
+            purpose: "c-cpp-compilation-cache"
+      
+      # === Neovim Cache Persistente ===
+      - type: volume
+        source: nvim-data
+        target: /home/vscode/.local/share/nvim
+        volume:
+          labels:
+            purpose: "neovim-plugins-cache"
+    
+    # ================================
+    # Environment Otimizado
+    # ================================
+    environment:
+      # Shell Configuration
+      - SHELL=/bin/zsh
+      - ZDOTDIR=/home/vscode
+      
+      # Mise Configuration
+      - PATH=/home/vscode/.local/bin:/home/vscode/.local/share/mise/shims:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+      - MISE_DATA_DIR=/home/vscode/.local/share/mise
+      - MISE_CONFIG_DIR=/home/vscode/.config/mise
+      - MISE_CACHE_DIR=/home/vscode/.cache/mise
+      
+      # Performance Tuning
+      - MAKEFLAGS=-j4
+      - CARGO_NET_GIT_FETCH_WITH_CLI=true
+      - PIP_CACHE_DIR=/home/vscode/.cache/pip
+      - NPM_CONFIG_CACHE=/home/vscode/.cache/npm
+      - CCACHE_DIR=/home/vscode/.ccache
+      - CCACHE_SIZE=2G
+      
+      # Locale
+      - LANG=C.UTF-8
+      - LC_ALL=C.UTF-8
+      
+      # Development
+      - TERM=xterm-256color
+      - COLORTERM=truecolor
+    
+    # ================================
+    # Network & Security
+    # ================================
+    user: vscode
+    working_dir: /workspaces/dotfiles
+    
+    # Network mode otimizado
+    network_mode: bridge
+    
+    # Security otimizada
+    security_opt:
+      - seccomp:unconfined
+      - apparmor:unconfined
+    
+    # ================================
+    # Lifecycle Commands
+    # ================================
+    command: ["/bin/zsh", "-c", "while true; do sleep 30; done"]
+    
+    # Health check
+    healthcheck:
+      test: ["/bin/zsh", "-c", "mise --version && echo 'Container healthy'"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    
+    # Restart policy
+    restart: unless-stopped
+    
+    # ================================
+    # Labels para Monitoring
+    # ================================
+    labels:
+      - "com.docker.compose.service=devcontainer"
+      - "com.docker.compose.project=dotfiles"
+      - "devcontainer.type=development"
+      - "devcontainer.tools=zsh,mise,nodejs,python"
+      - "devcontainer.version=3.0"
+
+# ================================
+# Volumes Nomeados com Labels
+# ================================
+volumes:
+  # Sistema
+  vscode-server-cache:
+    name: dotfiles-vscode-server-v3
+    labels:
+      backup: "false"
+      cleanup: "monthly"
+      
+  # Mise
+  mise-cache:
+    name: dotfiles-mise-cache-v3
+    labels:
+      backup: "false"
+      cleanup: "weekly"
+      
+  mise-data:
+    name: dotfiles-mise-data-v3
+    labels:
+      backup: "true"
+      cleanup: "never"
+  
+  # Package Managers
+  npm-cache:
+    name: dotfiles-npm-cache-v3
+    labels:
+      backup: "false"
+      cleanup: "weekly"
+      
+  pip-cache:
+    name: dotfiles-pip-cache-v3
+    labels:
+      backup: "false"
+      cleanup: "weekly"
+      
+  cargo-cache:
+    name: dotfiles-cargo-cache-v3
+    labels:
+      backup: "false"
+      cleanup: "monthly"
+  
+  # Compilation
+  ccache:
+    name: dotfiles-ccache-v3
+    labels:
+      backup: "false"
+      cleanup: "weekly"
+  
+  # Tools
+  nvim-data:
+    name: dotfiles-nvim-data-v3
+    labels:
+      backup: "true"
+      cleanup: "never"
+
+# ================================
+# Networks (se necessário)
+# ================================
+networks:
+  default:
+    name: dotfiles-network
+    labels:
+      purpose: "development-network"

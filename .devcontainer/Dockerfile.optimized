@@ -1,0 +1,178 @@
+# syntax=docker/dockerfile:1.7-labs
+# DevContainer Otimizado com Técnicas DevOps Avançadas
+
+# ================================
+# Build Args Globais
+# ================================
+ARG DEBIAN_FRONTEND=noninteractive
+ARG USERNAME=vscode
+ARG USER_UID=1000
+ARG USER_GID=$USER_UID
+ARG MISE_VERSION=latest
+ARG BUILDKIT_INLINE_CACHE=1
+
+# ================================
+# STAGE 1: Base Dependencies (Cache Compartilhado)
+# ================================
+FROM mcr.microsoft.com/devcontainers/base:debian AS base-deps
+
+# Metadados para melhor rastreabilidade
+LABEL stage="base-deps" \
+      maintainer="carloskvasir" \
+      description="Base dependencies with advanced caching"
+
+# Cache mount para apt packages
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    rm -f /etc/apt/apt.conf.d/docker-clean && \
+    echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache && \
+    apt-get update && apt-get install -y \
+    # System essentials
+    bash zsh grep wget curl tar bzip2 xz-utils \
+    coreutils patch ca-certificates gnupg lsb-release \
+    # Build essentials (otimizado para mise)
+    build-essential gcc clang autoconf make \
+    # Development utilities
+    git stow unzip \
+    # Performance: limpar apenas temporários, manter cache apt
+    && rm -rf /tmp/* /var/tmp/*
+
+# ================================
+# STAGE 2: User Setup (Paralelo)
+# ================================
+FROM base-deps AS user-setup
+
+ARG USERNAME
+ARG USER_UID
+ARG USER_GID
+
+# Metadados
+LABEL stage="user-setup" \
+      user="$USERNAME"
+
+# User creation otimizado com cache
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    if ! getent passwd $USER_UID; then \
+        groupadd --gid $USER_GID $USERNAME && \
+        useradd --uid $USER_UID --gid $USER_GID -m -s /bin/zsh $USERNAME && \
+        echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME && \
+        chmod 0440 /etc/sudoers.d/$USERNAME; \
+    fi
+
+# ================================
+# STAGE 3: Mise Installation (Cached)
+# ================================
+FROM user-setup AS mise-base
+
+USER $USERNAME
+WORKDIR /home/$USERNAME
+
+# Cache mount para downloads do mise
+RUN --mount=type=cache,target=/home/$USERNAME/.cache/mise,uid=$USER_UID,gid=$USER_GID \
+    --mount=type=cache,target=/tmp/mise-download,uid=$USER_UID,gid=$USER_GID \
+    curl -fsSL https://mise.run | sh && \
+    echo 'eval "$($HOME/.local/bin/mise activate bash)"' >> ~/.bashrc && \
+    echo 'eval "$($HOME/.local/bin/mise activate zsh)"' >> ~/.zshrc && \
+    mkdir -p ~/.config ~/.cache ~/.local/share
+
+# ================================
+# STAGE 4: Tools Cache (Paralelo por Tool)
+# ================================
+FROM mise-base AS tools-nodejs
+
+# Cache mount específico para Node.js
+RUN --mount=type=cache,target=/home/$USERNAME/.cache/mise,uid=$USER_UID,gid=$USER_GID \
+    --mount=type=cache,target=/home/$USERNAME/.cache/npm,uid=$USER_UID,gid=$USER_GID \
+    /home/$USERNAME/.local/bin/mise install nodejs@22 && \
+    /home/$USERNAME/.local/bin/mise global nodejs@22
+
+FROM mise-base AS tools-python
+
+# Cache mount específico para Python
+RUN --mount=type=cache,target=/home/$USERNAME/.cache/mise,uid=$USER_UID,gid=$USER_GID \
+    --mount=type=cache,target=/home/$USERNAME/.cache/pip,uid=$USER_UID,gid=$USER_GID \
+    /home/$USERNAME/.local/bin/mise install python@3.12 && \
+    /home/$USERNAME/.local/bin/mise global python@3.12
+
+FROM mise-base AS tools-dev
+
+# Cache mount para ferramentas de desenvolvimento
+RUN --mount=type=cache,target=/home/$USERNAME/.cache/mise,uid=$USER_UID,gid=$USER_GID \
+    /home/$USERNAME/.local/bin/mise install neovim@latest && \
+    /home/$USERNAME/.local/bin/mise install ripgrep@latest && \
+    /home/$USERNAME/.local/bin/mise install fzf@latest && \
+    /home/$USERNAME/.local/bin/mise install lazygit@latest || true
+
+# ================================
+# STAGE 5: Tool Aggregation (Merge Paralelo)
+# ================================
+FROM mise-base AS tools-merged
+
+# Copy tools instalados em paralelo
+COPY --from=tools-nodejs --chown=$USERNAME:$USERNAME /home/$USERNAME/.local /home/$USERNAME/.local-nodejs
+COPY --from=tools-python --chown=$USERNAME:$USERNAME /home/$USERNAME/.local /home/$USERNAME/.local-python  
+COPY --from=tools-dev --chown=$USERNAME:$USERNAME /home/$USERNAME/.local /home/$USERNAME/.local-dev
+
+# Merge inteligente dos tools
+RUN mkdir -p ~/.local/bin ~/.local/share/mise && \
+    # Merge binários
+    cp -r ~/.local-nodejs/bin/* ~/.local/bin/ 2>/dev/null || true && \
+    cp -r ~/.local-python/bin/* ~/.local/bin/ 2>/dev/null || true && \
+    cp -r ~/.local-dev/bin/* ~/.local/bin/ 2>/dev/null || true && \
+    # Merge mise data
+    cp -r ~/.local-nodejs/share/mise/* ~/.local/share/mise/ 2>/dev/null || true && \
+    cp -r ~/.local-python/share/mise/* ~/.local/share/mise/ 2>/dev/null || true && \
+    cp -r ~/.local-dev/share/mise/* ~/.local/share/mise/ 2>/dev/null || true && \
+    # Cleanup
+    rm -rf ~/.local-nodejs ~/.local-python ~/.local-dev && \
+    # Refresh mise
+    ~/.local/bin/mise reshim
+
+# ================================
+# STAGE 6: Configuration Layer
+# ================================
+FROM tools-merged AS config-layer
+
+# Copy configurações de mise
+COPY --chown=$USERNAME:$USERNAME mise/.config/mise/config.toml /home/$USERNAME/.config/mise/config.toml
+COPY --chown=$USERNAME:$USERNAME mise/.default-python-packages /home/$USERNAME/.default-python-packages
+COPY --chown=$USERNAME:$USERNAME mise/.default-npm-packages /home/$USERNAME/.default-npm-packages
+
+# Setup environment otimizado
+ENV PATH="/home/$USERNAME/.local/bin:/home/$USERNAME/.local/share/mise/shims:$PATH" \
+    MISE_DATA_DIR="/home/$USERNAME/.local/share/mise" \
+    MISE_CONFIG_DIR="/home/$USERNAME/.config/mise" \
+    SHELL=/bin/zsh \
+    LANG=C.UTF-8 \
+    LC_ALL=C.UTF-8
+
+# ================================
+# STAGE 7: Final Runtime (Minimal)
+# ================================
+FROM config-layer AS runtime
+
+# Copy test scripts
+COPY --chown=$USERNAME:$USERNAME .devcontainer/test-zsh-mise.sh /home/$USERNAME/test-zsh-mise.sh
+RUN chmod +x /home/$USERNAME/test-zsh-mise.sh
+
+# Working directory para DevContainer
+WORKDIR /workspaces
+
+# Health check otimizado (menor overhead)
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=2 \
+    CMD /bin/zsh -c 'mise --version && echo "OK"' || exit 1
+
+# Labels de produção
+LABEL stage="runtime" \
+      org.opencontainers.image.title="Dotfiles DevContainer" \
+      org.opencontainers.image.description="ZSH + Mise development environment" \
+      org.opencontainers.image.version="3.0" \
+      org.opencontainers.image.authors="carloskvasir" \
+      org.opencontainers.image.url="https://github.com/carloskvasir/dotfiles" \
+      org.opencontainers.image.source="https://github.com/carloskvasir/dotfiles" \
+      tools.nodejs="22" \
+      tools.python="3.12" \
+      tools.mise="latest"
+
+# Default command
+CMD ["/bin/zsh", "-c", "while true; do sleep 30; done"]

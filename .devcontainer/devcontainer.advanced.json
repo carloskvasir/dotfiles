@@ -1,0 +1,185 @@
+{
+  "name": "Advanced Dotfiles Development Environment",
+  
+  "dockerComposeFile": "docker-compose.optimized.yml",
+  "service": "devcontainer", 
+  "workspaceFolder": "/workspaces/dotfiles",
+  
+  "mounts": [
+    "source=${localWorkspaceFolder},target=/workspaces/dotfiles,type=bind,consistency=cached",
+    "source=devcontainer-vscode-server,target=/home/vscode/.vscode-server,type=volume",
+    "source=devcontainer-extensions,target=/home/vscode/.vscode-server/extensions,type=volume"
+  ],
+  
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "zsh",
+        "terminal.integrated.cwd": "/workspaces/dotfiles",
+        "terminal.integrated.env.linux": {
+          "SHELL": "/bin/zsh",
+          "ZDOTDIR": "/home/vscode",
+          "MISE_DATA_DIR": "/home/vscode/.local/share/mise",
+          "MISE_CONFIG_DIR": "/home/vscode/.config/mise"
+        },
+        "terminal.integrated.fontSize": 14,
+        "terminal.integrated.fontFamily": "JetBrains Mono, 'Courier New', monospace",
+        
+        "editor.fontFamily": "JetBrains Mono, 'Courier New', monospace",
+        "editor.fontSize": 14,
+        "editor.lineHeight": 1.5,
+        "editor.minimap.enabled": false,
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+          "source.fixAll": true,
+          "source.organizeImports": true
+        },
+        
+        "explorer.compactFolders": false,
+        "explorer.confirmDelete": false,
+        "explorer.confirmDragAndDrop": false,
+        
+        "git.enableSmartCommit": true,
+        "git.confirmSync": false,
+        "git.autofetch": true,
+        
+        "python.defaultInterpreterPath": "/home/vscode/.local/share/mise/shims/python",
+        "python.formatting.provider": "black",
+        "python.linting.enabled": true,
+        "python.linting.pylintEnabled": true,
+        
+        "typescript.preferences.importModuleSpecifier": "relative",
+        "javascript.preferences.importModuleSpecifier": "relative",
+        
+        "json.format.keepLines": true,
+        "yaml.format.bracketSpacing": true,
+        "yaml.format.singleQuote": true,
+        
+        "mise.enableShellIntegration": true,
+        
+        "search.useIgnoreFiles": true,
+        "search.useGlobalIgnoreFiles": true,
+        "files.watcherExclude": {
+          "**/.git/**": true,
+          "**/node_modules/**": true,
+          "**/.mise/**": true,
+          "**/.cache/**": true
+        },
+        
+        "workbench.colorTheme": "One Dark Pro",
+        "workbench.iconTheme": "material-icon-theme",
+        "workbench.sideBar.location": "left",
+        "workbench.panel.defaultLocation": "bottom",
+        
+        "security.workspace.trust.enabled": false
+      },
+      
+      "extensions": [
+        "ms-vscode.vscode-json",
+        "redhat.vscode-yaml",
+        "ms-vscode.vscode-typescript-next",
+        "ms-python.python",
+        "ms-python.pylint", 
+        "ms-python.black-formatter",
+        "ms-python.isort",
+        "esbenp.prettier-vscode",
+        "bradlc.vscode-tailwindcss",
+        "ms-vscode.vscode-eslint",
+        "eamodio.gitlens",
+        "mhutchie.git-graph",
+        "github.vscode-pull-request-github",
+        "ms-vscode-remote.remote-containers",
+        "ms-azuretools.vscode-docker",
+        "gruntfuggly.todo-tree",
+        "aaron-bond.better-comments",
+        "oderwat.indent-rainbow",
+        "streetsidesoftware.code-spell-checker",
+        "zhuangtongfa.material-theme",
+        "pkief.material-icon-theme",
+        "dotenv.dotenv-vscode",
+        "ms-vscode.makefile-tools"
+      ]
+    }
+  },
+  
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "dockerComposeVersion": "v2",
+      "version": "latest",
+      "moby": false,
+      "azureDnsAutoDetection": false,
+      "installDockerBuildx": true
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {
+      "installDirectlyFromGitHubRelease": true,
+      "version": "latest"
+    },
+    "ghcr.io/devcontainers/features/sshd:1": {
+      "version": "latest"
+    }
+  },
+  
+  "initializeCommand": [
+    "/bin/bash", "-c", 
+    "echo '🚀 Inicializando DevContainer Avançado...' && echo 'Build ID: $(date +%Y%m%d_%H%M%S)'"
+  ],
+  
+  "onCreateCommand": [
+    "/bin/zsh", "-c",
+    "echo '🔧 Configurando ambiente...' && ~/.local/bin/mise doctor || echo 'Mise não disponível ainda'"
+  ],
+  
+  "postCreateCommand": [
+    "/bin/zsh", "-c",
+    "echo '✅ Finalizando setup...' && chmod +x /workspaces/dotfiles/.devcontainer/test-zsh-mise.sh && /workspaces/dotfiles/.devcontainer/test-zsh-mise.sh"
+  ],
+  
+  "updateContentCommand": [
+    "/bin/zsh", "-c",
+    "echo '🔄 Atualizando ferramentas...' && source ~/.zshrc && mise upgrade --yes || echo 'Mise upgrade com warnings'"
+  ],
+  
+  "remoteUser": "vscode",
+  "remoteEnv": {
+    "PATH": "/home/vscode/.local/bin:/home/vscode/.local/share/mise/shims:${containerEnv:PATH}",
+    "SHELL": "/bin/zsh",
+    "MISE_DATA_DIR": "/home/vscode/.local/share/mise",
+    "MISE_CONFIG_DIR": "/home/vscode/.config/mise",
+    "COLORTERM": "truecolor",
+    "TERM": "xterm-256color"
+  },
+  
+  "hostRequirements": {
+    "memory": "6gb",
+    "storage": "15gb",
+    "cpus": 2
+  },
+  
+  "containerEnvFile": ".devcontainer/.env",
+  "shutdownAction": "stopCompose",
+  
+  "forwardPorts": [3000, 8080, 8000, 5000, 4000],
+  
+  "portsAttributes": {
+    "3000": {
+      "label": "Next.js Dev Server",
+      "onAutoForward": "notify"
+    },
+    "8080": {
+      "label": "HTTP Dev Server", 
+      "onAutoForward": "silent"
+    },
+    "8000": {
+      "label": "Python Dev Server",
+      "onAutoForward": "notify"
+    }
+  },
+  
+  "capAdd": ["SYS_PTRACE"],
+  "securityOpt": ["seccomp:unconfined"],
+  "overrideCommand": false,
+  
+  "postAttachCommand": {
+    "server": "echo '🎉 DevContainer pronto para desenvolvimento!' && echo 'Mise status:' && ~/.local/bin/mise list --installed 2>/dev/null || echo 'Execute: mise install para instalar ferramentas'"
+  }
+}
